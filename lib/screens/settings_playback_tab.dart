@@ -1,0 +1,438 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
+import '../providers/player_provider.dart';
+import '../services/auto_dj_service.dart';
+import '../services/transcoding_service.dart';
+import '../services/storage_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/settings/settings_section_card.dart';
+import '../widgets/settings/settings_icon_badge.dart';
+import '../utils/context_extensions.dart';
+
+class SettingsPlaybackTab extends StatefulWidget {
+  const SettingsPlaybackTab({super.key});
+
+  @override
+  State<SettingsPlaybackTab> createState() => _SettingsPlaybackTabState();
+}
+
+class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
+
+  bool _lrcLibFallback = false;
+  AutoDjMode _autoDjMode = AutoDjMode.off;
+  int _autoDjSongsToAdd = 5;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+
+    final storageService = StorageService();
+    final lrcLibFallback = await storageService.getLrcLibFallback();
+    setState(() {
+      _lrcLibFallback = lrcLibFallback;
+      _autoDjMode = playerProvider.autoDjService.mode;
+      _autoDjSongsToAdd = playerProvider.autoDjService.songsToAdd;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      children: [
+        SettingsSectionCard(
+          title: AppLocalizations.of(context)!.sectionAutoDj,
+          children: [
+            _buildAutoDjModeSelector(),
+            if (_autoDjMode != AutoDjMode.off) ...[
+              const SettingsDivider(),
+              _buildAutoDjSongsSlider(),
+            ],
+          ],
+        ),
+        const SizedBox(height: 24),
+        _buildLrcLibSection(),
+        const SizedBox(height: 24),
+        _buildTranscodingSection(),
+        const SizedBox(height: 40),
+      ],
+    );
+  }
+
+  Widget _buildAutoDjModeSelector() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFFFF2D55), Color(0xFFFF6B6B)],
+        icon: CupertinoIcons.wand_stars,
+      ),
+      title: Text(
+        AppLocalizations.of(context)!.autoDjMode,
+        style: const TextStyle(fontSize: 16),
+      ),
+      trailing: DropdownButton<AutoDjMode>(
+        value: _autoDjMode,
+        underline: const SizedBox(),
+        items: AutoDjMode.values.map((mode) {
+          return DropdownMenuItem(
+            value: mode,
+            child: Text(_getAutoDjModeLabel(mode)),
+          );
+        }).toList(),
+        onChanged: (value) {
+          if (value != null) _setAutoDjMode(value);
+        },
+      ),
+    );
+  }
+
+  String _getAutoDjModeLabel(AutoDjMode mode) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (mode) {
+      case AutoDjMode.off:
+        return l10n.autoDjOff;
+      case AutoDjMode.shuffleLibrary:
+        return l10n.autoDjShuffleLibrary;
+      case AutoDjMode.similarSongs:
+        return l10n.autoDjSimilarSongs;
+      case AutoDjMode.sameGenre:
+        return l10n.autoDjSameGenre;
+      case AutoDjMode.sameArtist:
+        return l10n.autoDjSameArtist;
+      case AutoDjMode.smartMix:
+        return l10n.autoDjSmartMix;
+    }
+  }
+
+  void _setAutoDjMode(AutoDjMode mode) {
+    final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+    playerProvider.autoDjService.setMode(mode);
+    setState(() => _autoDjMode = mode);
+  }
+
+  Widget _buildAutoDjSongsSlider() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFF5856D6), Color(0xFF7B68EE)],
+        icon: CupertinoIcons.music_note_list,
+      ),
+      title: Text(
+        AppLocalizations.of(context)!.autoDjSongsToAdd(_autoDjSongsToAdd),
+        style: const TextStyle(fontSize: 16),
+      ),
+      subtitle: Slider(
+        value: _autoDjSongsToAdd.toDouble(),
+        min: 1,
+        max: 20,
+        divisions: 19,
+        activeColor: Theme.of(context).colorScheme.primary,
+        onChanged: (value) {
+          final count = value.round();
+          final playerProvider = Provider.of<PlayerProvider>(
+            context,
+            listen: false,
+          );
+          playerProvider.autoDjService.setSongsToAdd(count);
+          setState(() => _autoDjSongsToAdd = count);
+        },
+      ),
+    );
+  }
+
+  Widget _buildLrcLibSection() {
+    final accent = Theme.of(context).colorScheme.primary;
+    return SettingsSectionCard(
+      title: 'Paroles',
+      children: [
+        ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 4,
+          ),
+          leading: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [accent, accent.withValues(alpha: 0.6)],
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              CupertinoIcons.text_quote,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
+          title: Text(
+            AppLocalizations.of(context)!.enableLrcLibFallback,
+            style: const TextStyle(fontSize: 16),
+          ),
+          subtitle: Text(
+            AppLocalizations.of(context)!.lrcLibFallbackSubtitle,
+            style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withValues(alpha: 0.5)
+                  : Colors.black.withValues(alpha: 0.5),
+            ),
+          ),
+          trailing: CupertinoSwitch(
+            value: _lrcLibFallback,
+            activeTrackColor: accent,
+            onChanged: (v) async {
+              final storage = StorageService();
+              await storage.saveLrcLibFallback(v);
+              setState(() => _lrcLibFallback = v);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTranscodingSection() {
+    return Consumer<TranscodingService>(
+      builder: (context, ts, _) {
+        final accent = Theme.of(context).colorScheme.primary;
+        final secondaryText =
+            context.isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
+
+        Widget connectionBadge() {
+          final isWifi = ts.currentConnectionType == ConnectionType.wifi;
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: (isWifi ? Colors.green : Colors.orange)
+                  .withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isWifi ? Icons.wifi_rounded : Icons.signal_cellular_alt,
+                  size: 12,
+                  color: isWifi ? Colors.green : Colors.orange,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  isWifi ? 'WiFi' : 'Mobile',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: isWifi ? Colors.green : Colors.orange,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return SettingsSectionCard(
+          title: AppLocalizations.of(context)!.sectionStreamingQuality,
+          children: [
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 4,
+              ),
+              leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFFFF9500), Color(0xFFFF3B30)],
+        icon: CupertinoIcons.waveform,
+      ),
+              title: Text(
+                AppLocalizations.of(context)!.transcodingEnable,
+                style: const TextStyle(fontSize: 16),
+              ),
+              subtitle: Text(
+                AppLocalizations.of(context)!.transcodingEnableSubtitle,
+                style: TextStyle(fontSize: 13, color: secondaryText),
+              ),
+              trailing: CupertinoSwitch(
+                value: ts.enabled,
+                activeTrackColor: accent,
+                onChanged: (v) => ts.setEnabled(v),
+              ),
+            ),
+            if (ts.enabled) ...[
+              const SettingsDivider(),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+                leading: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [accent, accent.withValues(alpha: 0.6)],
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.auto_fix_high_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+                title: Text(
+                  AppLocalizations.of(context)!.smartTranscoding,
+                  style: const TextStyle(fontSize: 16),
+                ),
+                subtitle: Text(
+                  AppLocalizations.of(context)!.smartTranscodingSubtitle,
+                  style: TextStyle(fontSize: 13, color: secondaryText),
+                ),
+                trailing: CupertinoSwitch(
+                  value: ts.smartEnabled,
+                  activeTrackColor: accent,
+                  onChanged: (v) => ts.setSmartEnabled(v),
+                ),
+              ),
+              if (ts.smartEnabled)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          AppLocalizations.of(context)!
+                              .smartTranscodingDetectedNetwork,
+                          style: TextStyle(fontSize: 12, color: secondaryText),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      connectionBadge(),
+                      const Spacer(),
+                      Flexible(
+                        child: Text(
+                          AppLocalizations.of(context)!
+                              .smartTranscodingActiveBitrate(
+                            ts.getCurrentBitrate() != null
+                                ? '${ts.getCurrentBitrate()} kbps'
+                                : AppLocalizations.of(context)!
+                                    .transcodingFormatOriginal,
+                          ),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: secondaryText,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.end,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SettingsDivider(),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+                leading: const Icon(Icons.wifi_rounded, size: 20),
+                title:
+                    Text(AppLocalizations.of(context)!.transcodingWifiQuality),
+                subtitle: Text(
+                  ts.smartEnabled
+                      ? AppLocalizations.of(context)!
+                          .transcodingWifiQualitySubtitleSmart
+                      : AppLocalizations.of(context)!
+                          .transcodingWifiQualitySubtitle,
+                  style: TextStyle(fontSize: 12, color: secondaryText),
+                ),
+                trailing: DropdownButton<int>(
+                  value: ts.wifiBitrate,
+                  underline: const SizedBox(),
+                  items: TranscodeBitrate.options.map((bitrate) {
+                    final label = bitrate == TranscodeBitrate.original
+                        ? AppLocalizations.of(context)!
+                            .transcodingBitrateOriginal
+                        : '$bitrate kbps';
+                    return DropdownMenuItem(value: bitrate, child: Text(label));
+                  }).toList(),
+                  onChanged: (v) {
+                    if (v != null) ts.setWifiBitrate(v);
+                  },
+                ),
+              ),
+              const SettingsDivider(),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+                leading: const Icon(
+                  Icons.signal_cellular_alt_rounded,
+                  size: 20,
+                ),
+                title: Text(
+                    AppLocalizations.of(context)!.transcodingMobileQuality),
+                subtitle: Text(
+                  ts.smartEnabled
+                      ? AppLocalizations.of(context)!
+                          .transcodingMobileQualitySubtitleSmart
+                      : AppLocalizations.of(context)!
+                          .transcodingMobileQualitySubtitle,
+                  style: TextStyle(fontSize: 12, color: secondaryText),
+                ),
+                trailing: DropdownButton<int>(
+                  value: ts.mobileBitrate,
+                  underline: const SizedBox(),
+                  items: TranscodeBitrate.options.map((bitrate) {
+                    final label = bitrate == TranscodeBitrate.original
+                        ? AppLocalizations.of(context)!
+                            .transcodingBitrateOriginal
+                        : '$bitrate kbps';
+                    return DropdownMenuItem(value: bitrate, child: Text(label));
+                  }).toList(),
+                  onChanged: (v) {
+                    if (v != null) ts.setMobileBitrate(v);
+                  },
+                ),
+              ),
+              const SettingsDivider(),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+                leading: const Icon(Icons.audio_file_rounded, size: 20),
+                title: Text(AppLocalizations.of(context)!.transcodingFormat),
+                subtitle: Text(
+                  AppLocalizations.of(context)!.transcodingFormatSubtitle,
+                  style: TextStyle(fontSize: 12, color: secondaryText),
+                ),
+                trailing: DropdownButton<String>(
+                  value: ts.format,
+                  underline: const SizedBox(),
+                  items: TranscodeFormat.options.map((format) {
+                    final label = format == TranscodeFormat.original
+                        ? AppLocalizations.of(context)!
+                            .transcodingFormatOriginal
+                        : format.toUpperCase();
+                    return DropdownMenuItem(value: format, child: Text(label));
+                  }).toList(),
+                  onChanged: (v) {
+                    if (v != null) ts.setFormat(v);
+                  },
+                ),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
