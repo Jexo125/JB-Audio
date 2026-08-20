@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:musly/models/song.dart';
-import 'package:musly/providers/player_provider.dart';
-import 'package:musly/services/subsonic_service.dart';
-import 'package:musly/services/storage_service.dart';
-import 'package:musly/services/upnp_service.dart';
-import 'package:musly/services/audio_handler.dart';
-import 'package:musly/services/jukebox_service.dart';
-import 'package:musly/services/transcoding_service.dart';
-import 'package:musly/widgets/song_tile.dart';
+import 'package:jbaudio/models/song.dart';
+import 'package:jbaudio/providers/player_provider.dart';
+import 'package:jbaudio/services/subsonic_service.dart';
+import 'package:jbaudio/services/storage_service.dart';
+import 'package:jbaudio/services/upnp_service.dart';
+import 'package:jbaudio/services/audio_handler.dart';
+import 'package:jbaudio/services/jukebox_service.dart';
+import 'package:jbaudio/services/transcoding_service.dart';
+import 'package:jbaudio/widgets/song_tile.dart';
 import '../test_helpers.dart';
 import '../bootstrap.dart';
 

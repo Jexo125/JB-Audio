@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:musly/models/models.dart';
-import 'package:musly/services/subsonic_service.dart';
+import 'package:jbaudio/models/models.dart';
+import 'package:jbaudio/services/subsonic_service.dart';
 
 void main() {
   group('Security Tests', () {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:musly/providers/auth_provider.dart';
-import 'package:musly/providers/library_provider.dart';
-import 'package:musly/providers/player_provider.dart';
-import 'package:musly/services/services.dart';
-import 'package:musly/services/audio_handler.dart';
-import 'package:musly/services/transcoding_service.dart';
+import 'package:jbaudio/providers/auth_provider.dart';
+import 'package:jbaudio/providers/library_provider.dart';
+import 'package:jbaudio/providers/player_provider.dart';
+import 'package:jbaudio/services/services.dart';
+import 'package:jbaudio/services/audio_handler.dart';
+import 'package:jbaudio/services/transcoding_service.dart';
 import 'package:provider/provider.dart';
 
 import '../test_helpers.dart';

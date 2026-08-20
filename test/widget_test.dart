@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:musly/main.dart';
-import 'package:musly/providers/auth_provider.dart';
-import 'package:musly/services/locale_service.dart';
-import 'package:musly/services/theme_service.dart';
-import 'package:musly/services/subsonic_service.dart';
-import 'package:musly/services/storage_service.dart';
+import 'package:jbaudio/main.dart';
+import 'package:jbaudio/providers/auth_provider.dart';
+import 'package:jbaudio/services/locale_service.dart';
+import 'package:jbaudio/services/theme_service.dart';
+import 'package:jbaudio/services/subsonic_service.dart';
+import 'package:jbaudio/services/storage_service.dart';
 
 void main() {
   testWidgets('App should build', (WidgetTester tester) async {

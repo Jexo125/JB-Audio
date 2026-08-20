@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:musly/services/storage_service.dart';
+import 'package:jbaudio/services/storage_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

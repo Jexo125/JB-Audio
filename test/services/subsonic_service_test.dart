@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:musly/models/server_config.dart';
-import 'package:musly/services/subsonic_service.dart';
+import 'package:jbaudio/models/server_config.dart';
+import 'package:jbaudio/services/subsonic_service.dart';
 
 void main() {
   group('SubsonicService', () {

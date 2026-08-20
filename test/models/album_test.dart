@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:musly/models/album.dart';
+import 'package:jbaudio/models/album.dart';
 
 void main() {
   group('Album', () {
