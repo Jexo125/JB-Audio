@@ -1,45 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import '../services/analytics_service.dart';
-import '../services/update_service.dart';
 import '../widgets/settings/settings_section_card.dart';
 import '../utils/context_extensions.dart';
 
-class SettingsAboutTab extends StatefulWidget {
+/// Onglet "À propos" affichant les informations de version et de plateforme.
+/// La version est récupérée dynamiquement depuis le paquet Android/iOS.
+class SettingsAboutTab extends StatelessWidget {
   const SettingsAboutTab({super.key});
 
-  @override
-  State<SettingsAboutTab> createState() => _SettingsAboutTabState();
-}
-
-class _SettingsAboutTabState extends State<SettingsAboutTab> {
-  String _appVersion = '...';
-
-  @override
-  void initState() {
-    super.initState();
-    _disableAnalytics();
-    _loadVersion();
-  }
-
-  Future<void> _loadVersion() async {
-    final version = await UpdateService.getCurrentVersion();
-    if (mounted) {
-      setState(() {
-        _appVersion = version;
-      });
-    }
-  }
-
   Future<void> _disableAnalytics() async {
-    // Désactivation forcée de l'analytics au chargement
+    // Désactivation forcée de l'analytics pour cet écran
     await AnalyticsService().setEnabled(false);
   }
 
   @override
   Widget build(BuildContext context) {
+    // On s'assure que l'analytics est désactivé
+    _disableAnalytics();
+
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
@@ -47,12 +29,23 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
         SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionAboutInformation,
           children: [
-            _buildInfoTile(
-              context,
-              icon: CupertinoIcons.info,
-              iconColor: Theme.of(context).colorScheme.primary,
-              title: AppLocalizations.of(context)!.aboutVersion,
-              subtitle: _appVersion,
+            FutureBuilder<PackageInfo>(
+              future: PackageInfo.fromPlatform(),
+              builder: (context, snapshot) {
+                // Récupération de la version (ex: 1.0.1) depuis le paquet natif.
+                // Si les données ne sont pas encore là, on affiche un indicateur.
+                final String appVersion = snapshot.hasData 
+                    ? snapshot.data!.version 
+                    : '...';
+                
+                return _buildInfoTile(
+                  context,
+                  icon: CupertinoIcons.info,
+                  iconColor: Theme.of(context).colorScheme.primary,
+                  title: AppLocalizations.of(context)!.aboutVersion,
+                  subtitle: appVersion,
+                );
+              },
             ),
             _buildDivider(context),
             _buildInfoTile(
@@ -67,10 +60,12 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
 
         const SizedBox(height: 24),
 
-        // Section Développeur (Restaurée et personnalisée)
+        // Section Développeur
         SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionAboutDeveloper,
-          children: [_buildDeveloperInfo(context)],
+          children: [
+            _buildDeveloperInfo(context),
+          ],
         ),
 
         const SizedBox(height: 40),
@@ -89,12 +84,12 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
   }
 
   Widget _buildInfoTile(
-      BuildContext context, {
-        required IconData icon,
-        required Color iconColor,
-        required String title,
-        required String subtitle,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+  }) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: Container(
