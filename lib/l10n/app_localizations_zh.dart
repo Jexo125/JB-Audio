@@ -9,7 +9,7 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get appName => 'Musly';
+  String get appName => 'JB Audio';
 
   @override
   String get emulatorDetected => 'Emulator Detected';
@@ -1200,7 +1200,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updateAvailable => '有可用更新';
 
   @override
-  String get updateAvailableSubtitle => '新版本的 Musly 已可用！';
+  String get updateAvailableSubtitle => '新版本的 JB Audio 已可用！';
 
   @override
   String updateCurrentVersion(String version) {

@@ -9,7 +9,7 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
-  String get appName => 'Musly';
+  String get appName => 'JB Audio';
 
   @override
   String get emulatorDetected => 'Emulator Detected';
@@ -1223,7 +1223,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get updateAvailable => 'Доступно обновление';
 
   @override
-  String get updateAvailableSubtitle => 'Доступна новая версия Musly!';
+  String get updateAvailableSubtitle => 'Доступна новая версия JB Audio!';
 
   @override
   String updateCurrentVersion(String version) {

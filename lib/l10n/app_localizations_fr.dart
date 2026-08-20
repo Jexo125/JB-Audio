@@ -1222,7 +1222,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get updateAvailableSubtitle =>
-      'Une nouvelle version de Musly est disponible !';
+      'Une nouvelle mise à jour de JB Audio est disponible !';
 
   @override
   String updateCurrentVersion(String version) {

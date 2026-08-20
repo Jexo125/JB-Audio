@@ -1160,7 +1160,7 @@
   "@updateAvailable": {
     "description": "Title of the update available dialog"
   },
-  "updateAvailableSubtitle": "新版本的 Musly 已可用！",
+  "updateAvailableSubtitle": "新版本的 JB Audio 已可用！",
   "@updateAvailableSubtitle": {
     "description": "Subtitle in the update dialog"
   },

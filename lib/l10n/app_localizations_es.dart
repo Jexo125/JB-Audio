@@ -9,7 +9,7 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get appName => 'Musly';
+  String get appName => 'JB Audio';
 
   @override
   String get emulatorDetected => 'Emulator Detected';
@@ -1223,7 +1223,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get updateAvailableSubtitle =>
-      '¡Una nueva versión de Musly está disponible!';
+      '¡Una nueva versión de JB Audio está disponible!';
 
   @override
   String updateCurrentVersion(String version) {

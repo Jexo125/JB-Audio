@@ -1260,7 +1260,7 @@
   "@updateAvailable": {
     "description": "Title of the update available dialog"
   },
-  "updateAvailableSubtitle": "Une nouvelle version de Musly est disponible !",
+  "updateAvailableSubtitle": "Une nouvelle mise à jour de JB Audio est disponible !",
   "@updateAvailableSubtitle": {
     "description": "Subtitle in the update dialog"
   },

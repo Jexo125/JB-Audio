@@ -625,7 +625,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
   Future<void> _startDownload() async {
     final apkUrl = UpdateService.getApkUrl(widget.release);
     if (apkUrl == null) {
-      setState(() => _error = "Aucun fichier APK trouvé pour cette version.");
+      setState(() => _error = "Aucun fichier APK trouvé pour JB Audio.");
       return;
     }
 
@@ -732,7 +732,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
                 child: Column(
                   children: [
                     const Text(
-                      "Téléchargement de la mise à jour...",
+                      "Téléchargement de JB Audio...",
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 24),

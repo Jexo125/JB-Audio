@@ -1,7 +1,7 @@
 {
   "@@locale": "ru",
   "@@last_modified": "2026-02-07T16:10:00Z",
-  "appName": "Musly",
+  "appName": "JB Audio",
   "@appName": {
     "description": "Application name"
   },
@@ -1167,7 +1167,7 @@
   "@updateAvailable": {
     "description": "Title of the update available dialog"
   },
-  "updateAvailableSubtitle": "Доступна новая версия Musly!",
+  "updateAvailableSubtitle": "Доступна новая версия JB Audio!",
   "@updateAvailableSubtitle": {
     "description": "Subtitle in the update dialog"
   },

@@ -151,7 +151,7 @@ abstract class AppLocalizations {
   /// Application name
   ///
   /// In en, this message translates to:
-  /// **'Musly'**
+  /// **'JB Audio'**
   String get appName;
 
   /// Title shown when the app detects it's running on an emulator
@@ -2359,7 +2359,7 @@ abstract class AppLocalizations {
   /// Subtitle in the update dialog
   ///
   /// In en, this message translates to:
-  /// **'A new version of Musly is available!'**
+  /// **'A new version of JB Audio is available!'**
   String get updateAvailableSubtitle;
 
   /// Current version label in the update dialog
