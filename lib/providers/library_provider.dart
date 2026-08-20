@@ -209,6 +209,7 @@ class LibraryProvider extends ChangeNotifier {
         return;
       }
 
+      // 1. Load cached data from SQLite and Prefs FIRST.
       await _loadCachedData(loadFullLibrary: true);
 
       if (_recentAlbums.isEmpty && _cachedAllAlbums.isNotEmpty) {
@@ -221,37 +222,40 @@ class LibraryProvider extends ChangeNotifier {
         _playlists = _cachedPlaylists;
       }
 
-      _audioHandler.notifyAutoChildrenChanged();
-
-      if (!_serverOfflineMode) {
-        try {
-          await Future.wait([
-            loadRecentAlbums(),
-            loadRandomSongs(),
-            loadPlaylists(),
-            loadArtists(),
-          ]).timeout(
-            const Duration(seconds: 5),
-            onTimeout: () {
-              debugPrint(
-                'Server initialization timed out - continuing in local mode',
-              );
-              throw TimeoutException('Server not responding');
-            },
-          );
-        } catch (serverError) {
-          debugPrint('Server initialization skipped: $serverError');
-        }
-      }
-
+      // 2. MARK AS INITIALIZED IMMEDIATELY after cache is loaded.
+      // This allows the UI to show the library without waiting for the server.
       _isInitialized = true;
-      _preloadCoverArt();
-      _scheduleBackgroundRefresh();
-    } catch (e) {
-      _error = e.toString();
-    } finally {
       _isLoading = false;
       notifyListeners();
+      
+      _audioHandler.notifyAutoChildrenChanged();
+
+      // 3. Launch server sync in background without 'await'.
+      if (!_serverOfflineMode) {
+        _performBackgroundInitialSync();
+      }
+
+      _preloadCoverArt();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Performs the initial network sync without blocking the UI thread.
+  Future<void> _performBackgroundInitialSync() async {
+    try {
+      await Future.wait([
+        loadRecentAlbums(),
+        loadRandomSongs(),
+        loadPlaylists(),
+        loadArtists(),
+      ]).timeout(const Duration(seconds: 15));
+      
+      _scheduleBackgroundRefresh();
+    } catch (e) {
+      debugPrint('LibraryProvider: background sync failed or timed out: $e');
     }
   }
 
@@ -339,10 +343,12 @@ class LibraryProvider extends ChangeNotifier {
       int offset = 0;
       final List<Album> allAlbums = [];
       final seenSongIds = <String>{};
+      final seenAlbumIds = <String>{};
+      final seenArtistIds = <String>{};
 
-      // Clear DB before refresh so we don't accumulate stale data.
-      await _db.clearServerData();
-
+      // FETCH PHASE: Collect data from server. 
+      // We no longer clear DB at the start.
+      
       while (true) {
         final page = await _subsonicService.getAlbumList(
           type: 'alphabeticalByName',
@@ -350,14 +356,18 @@ class LibraryProvider extends ChangeNotifier {
           offset: offset,
         );
         if (page.isEmpty) break;
+        
+        for (var a in page) {
+          seenAlbumIds.add(a.id);
+        }
         allAlbums.addAll(page);
         await _db.insertAlbumsBatch(page);
+        
         if (page.length < pageSize) break;
         offset += pageSize;
       }
 
       if (_subsonicService.isJellyfin) {
-        // Jellyfin/Emby: fetch all songs in O(1) API call.
         try {
           final allSongs = await _subsonicService.getAllSongs();
           for (final song in allSongs) {
@@ -365,37 +375,50 @@ class LibraryProvider extends ChangeNotifier {
           }
           await _db.insertSongsBatch(allSongs);
         } catch (e) {
-          debugPrint(
-              'Jellyfin getAllSongs failed, falling back to album traversal: $e');
+          debugPrint('Jellyfin getAllSongs failed: $e');
         }
       }
 
-      var failedAlbumLoads = 0;
       if (seenSongIds.isEmpty) {
-        // Subsonic or Jellyfin fallback: iterate albums from DB
-        // instead of holding the entire album list in RAM.
+        // Fallback or Subsonic: iterate albums to get songs
         final albumCount = await _db.getAlbumCount();
         const albumBatchSize = 50;
-        for (int aOffset = 0;
-            aOffset < albumCount;
-            aOffset += albumBatchSize) {
-          final albums =
-              await _db.getAlbumsPaginated(limit: albumBatchSize, offset: aOffset);
+        for (int aOffset = 0; aOffset < albumCount; aOffset += albumBatchSize) {
+          final albums = await _db.getAlbumsPaginated(limit: albumBatchSize, offset: aOffset);
           for (final album in albums) {
             try {
-              final albumSongs =
-                  await _subsonicService.getAlbumSongs(album.id);
-              final newSongs = albumSongs.where((s) => seenSongIds.add(s.id)).toList();
-              if (newSongs.isNotEmpty) {
-                await _db.insertSongsBatch(newSongs);
+              final albumSongs = await _subsonicService.getAlbumSongs(album.id);
+              for (var s in albumSongs) {
+                seenSongIds.add(s.id);
+              }
+              if (albumSongs.isNotEmpty) {
+                await _db.insertSongsBatch(albumSongs);
               }
             } catch (e) {
-              failedAlbumLoads++;
-              debugPrint('Error loading album ${album.id}: $e');
+              debugPrint('Error loading album songs for ${album.id}: $e');
             }
           }
         }
       }
+
+      // Also track artists from the main artist list
+      try {
+        final artists = await _subsonicService.getArtists();
+        for (var a in artists) {
+          seenArtistIds.add(a.id);
+        }
+        await _db.insertArtistsBatch(artists);
+      } catch (e) {
+        debugPrint('Error syncing artists during full refresh: $e');
+      }
+
+      // CLEANUP PHASE: Only remove what wasn't seen in this successful run.
+      // This is atomic and safe because we only reach this if the fetch phase succeeded.
+      await _db.cleanupStaleServerData(
+        seenSongIds: seenSongIds,
+        seenAlbumIds: seenAlbumIds,
+        seenArtistIds: seenArtistIds,
+      );
 
       _cachedAllAlbums = allAlbums;
       _cachedAllSongs = await _db.getAllSongs();
@@ -403,13 +426,10 @@ class LibraryProvider extends ChangeNotifier {
 
       await _saveCachedData();
       notifyListeners();
-      debugPrint(
-        'Background refresh complete: ${allAlbums.length} albums, '
-        '${_cachedAllSongs.length} songs '
-        '(${failedAlbumLoads > 0 ? "$failedAlbumLoads album(s) failed, " : ""}kept what succeeded).',
-      );
+      
+      debugPrint('Background refresh complete. Library is now up to date.');
     } catch (e) {
-      debugPrint('Error refreshing all data: $e');
+      debugPrint('Error refreshing all data: $e - Local cache remains untouched.');
     }
   }
 

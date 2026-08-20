@@ -313,6 +313,47 @@ class LibraryDatabaseService {
     return maps.map((m) => _songFromMap(m)).toList();
   }
 
+  /// Removes server-side data (songs, albums, artists) that were NOT seen during the last successful sync.
+  /// This ensures local library items (isLocal=1) are NEVER deleted.
+  Future<void> cleanupStaleServerData({
+    required Set<String> seenSongIds,
+    required Set<String> seenAlbumIds,
+    required Set<String> seenArtistIds,
+  }) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      // 1. Cleanup Songs
+      if (seenSongIds.isNotEmpty) {
+        final placeholders = List.filled(seenSongIds.length, '?').join(',');
+        await txn.delete(
+          'songs',
+          where: 'isLocal = 0 AND id NOT IN ($placeholders)',
+          whereArgs: seenSongIds.toList(),
+        );
+      }
+
+      // 2. Cleanup Albums
+      if (seenAlbumIds.isNotEmpty) {
+        final placeholders = List.filled(seenAlbumIds.length, '?').join(',');
+        await txn.delete(
+          'albums',
+          where: 'isLocal = 0 AND id NOT IN ($placeholders)',
+          whereArgs: seenAlbumIds.toList(),
+        );
+      }
+
+      // 3. Cleanup Artists
+      if (seenArtistIds.isNotEmpty) {
+        final placeholders = List.filled(seenArtistIds.length, '?').join(',');
+        await txn.delete(
+          'artists',
+          where: 'isLocal = 0 AND id NOT IN ($placeholders)',
+          whereArgs: seenArtistIds.toList(),
+        );
+      }
+    });
+  }
+
   Future<void> close() async {
     if (_db != null) {
       await _db!.close();
