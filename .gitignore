@@ -63,3 +63,9 @@ packages/**/android/.gradle/
 
 # Test and analysis generated files
 analysis_*.txt
+
+# Android signing keys
+jbaudio-release.keystore
+*.keystore
+*.jks
+android/key.properties
