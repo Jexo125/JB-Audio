@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import '../services/analytics_service.dart';
+import '../services/update_service.dart';
 import '../widgets/settings/settings_section_card.dart';
 import '../utils/context_extensions.dart';
 
@@ -14,10 +15,22 @@ class SettingsAboutTab extends StatefulWidget {
 }
 
 class _SettingsAboutTabState extends State<SettingsAboutTab> {
+  String _appVersion = '...';
+
   @override
   void initState() {
     super.initState();
     _disableAnalytics();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final version = await UpdateService.getCurrentVersion();
+    if (mounted) {
+      setState(() {
+        _appVersion = version;
+      });
+    }
   }
 
   Future<void> _disableAnalytics() async {
@@ -39,7 +52,7 @@ class _SettingsAboutTabState extends State<SettingsAboutTab> {
               icon: CupertinoIcons.info,
               iconColor: Theme.of(context).colorScheme.primary,
               title: AppLocalizations.of(context)!.aboutVersion,
-              subtitle: '1.0',
+              subtitle: _appVersion,
             ),
             _buildDivider(context),
             _buildInfoTile(
