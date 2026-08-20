@@ -7,6 +7,7 @@ on:
 
 env:
   FLUTTER_VERSION: '3.47.0'
+  JAVA_VERSION: '17'
 
 jobs:
   # Job 1: Extract version and check if we should create a release
@@ -46,11 +47,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
+          cache: true
       
       - name: Install dependencies
         run: flutter pub get
@@ -82,34 +91,10 @@ jobs:
           name: android-apk
           path: build/app/outputs/flutter-apk/*.apk
 
-  # Job 3: Windows Build
-  build-windows:
-    runs-on: windows-latest
-    needs: metadata
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-      - name: Install dependencies
-        run: flutter pub get
-      - name: Build Windows
-        run: flutter build windows --release
-      - name: Package Windows
-        run: |
-          mkdir windows_release
-          xcopy /E /I build\windows\x64\runner\Release\* windows_release\
-      - name: Upload Windows Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-build
-          path: windows_release/
-
-  # Job 4: Create GitHub Release (only if version changed)
+  # Job 3: Create GitHub Release (only if version changed)
   release:
     runs-on: ubuntu-latest
-    needs: [metadata, build-android, build-windows]
+    needs: [metadata, build-android]
     if: needs.metadata.outputs.should_release == 'true'
     permissions:
       contents: write
@@ -123,18 +108,6 @@ jobs:
           name: android-apk
           path: artifacts/android/
 
-      - name: Download Windows Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-build
-          path: artifacts/windows/
-
-      - name: Package Windows ZIP
-        run: |
-          cd artifacts/windows
-          zip -r ../../JB-Audio-Windows.zip .
-          cd ../..
-
       - name: Create Tag and Release
         uses: softprops/action-gh-release@v2
         with:
@@ -143,21 +116,16 @@ jobs:
           body: |
             ## 🎧 JB Audio v${{ needs.metadata.outputs.version }}
 
-            Nouvelle version de votre lecteur de musique préféré.
+            Nouvelle version officielle de JB Audio pour Android.
 
             ### 📦 Téléchargements
 
-            **Android :**
-            - `JB-Audio-v${{ needs.metadata.outputs.version }}.apk` (APK universel)
-
-            **Windows :**
-            - `JB-Audio-Windows.zip` (Version portable)
+            - `JB-Audio-v${{ needs.metadata.outputs.version }}.apk`
 
             ---
             *Généré automatiquement par GitHub Actions.*
           files: |
             artifacts/android/*.apk
-            JB-Audio-Windows.zip
           draft: false
           prerelease: false
         env:
