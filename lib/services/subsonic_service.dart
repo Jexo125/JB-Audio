@@ -796,6 +796,38 @@ class SubsonicService {
     }
   }
 
+  /// Specialized method for library synchronization.
+  /// Fetches a page of songs using an empty search query.
+  Future<List<Song>> getAllSongsGlobal({int size = 500, int offset = 0}) async {
+    if (_config == null) return [];
+    try {
+      final params = _getAuthParams();
+      params.addAll({
+        'query': '', // Empty query to get all songs
+        'songCount': size.toString(),
+        'songOffset': offset.toString(),
+      });
+
+      final url = Uri.parse('${_config!.serverUrl}/rest/search3.view')
+          .replace(queryParameters: params);
+      final response = await http.get(url).timeout(const Duration(seconds: 30));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final searchResult = data['subsonic-response']?['searchResult3'];
+        if (searchResult != null) {
+          final songs = searchResult['song'];
+          if (songs is List) {
+            return songs.map((s) => Song.fromJson(s)).toList();
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error in global song fetch: $e');
+    }
+    return [];
+  }
+
   Map<String, String> _getAuthParams() {
     if (_config == null) return {};
     final salt = const Uuid().v4().substring(0, 8);

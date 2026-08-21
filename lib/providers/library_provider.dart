@@ -380,24 +380,25 @@ class LibraryProvider extends ChangeNotifier {
       }
 
       if (seenSongIds.isEmpty) {
-        // Fallback or Subsonic: iterate albums to get songs
-        final albumCount = await _db.getAlbumCount();
-        const albumBatchSize = 50;
-        for (int aOffset = 0; aOffset < albumCount; aOffset += albumBatchSize) {
-          final albums = await _db.getAlbumsPaginated(limit: albumBatchSize, offset: aOffset);
-          for (final album in albums) {
-            try {
-              final albumSongs = await _subsonicService.getAlbumSongs(album.id);
-              for (var s in albumSongs) {
-                seenSongIds.add(s.id);
-              }
-              if (albumSongs.isNotEmpty) {
-                await _db.insertSongsBatch(albumSongs);
-              }
-            } catch (e) {
-              debugPrint('Error loading album songs for ${album.id}: $e');
-            }
+        // Optimization: Use global paginated search to fetch all songs at once
+        // instead of iterating through every album (Legacy N+1 problem).
+        int songOffset = 0;
+        const songPageSize = 500;
+        
+        while (true) {
+          final songsPage = await _subsonicService.getAllSongsGlobal(
+            size: songPageSize,
+            offset: songOffset,
+          );
+          if (songsPage.isEmpty) break;
+
+          for (var s in songsPage) {
+            seenSongIds.add(s.id);
           }
+          await _db.insertSongsBatch(songsPage);
+
+          if (songsPage.length < songPageSize) break;
+          songOffset += songPageSize;
         }
       }
 
