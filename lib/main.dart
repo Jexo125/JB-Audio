@@ -18,6 +18,7 @@ import 'services/favorite_playlists_service.dart';
 import 'widgets/privacy_policy_dialog.dart';
 import 'providers/providers.dart';
 import 'screens/screens.dart';
+import 'screens/library_sync_screen.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'theme/theme.dart';
 import 'utils/image_cache.dart';
@@ -332,7 +333,15 @@ class _AuthWrapperState extends State<AuthWrapper> {
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           await _showPrivacyPolicyIfNeeded();
         });
-        return const MainScreen();
+        
+        return Consumer<LibraryProvider>(
+          builder: (context, libraryProvider, _) {
+            if (libraryProvider.isFirstSyncInProgress) {
+              return const LibrarySyncScreen();
+            }
+            return const MainScreen();
+          },
+        );
       case AuthState.offlineMode:
         return const MainScreen(isOfflineMode: true);
       case AuthState.serverUnreachable:

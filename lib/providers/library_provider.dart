@@ -7,6 +7,7 @@ import '../services/services.dart';
 import '../services/audio_handler.dart';
 import '../services/local_music_service.dart';
 import '../utils/search_utility.dart';
+import '../models/sync_progress.dart';
 
 class LibraryProvider extends ChangeNotifier {
   final SubsonicService _subsonicService;
@@ -34,8 +35,13 @@ class LibraryProvider extends ChangeNotifier {
   List<Playlist> _cachedPlaylists = [];
   DateTime? _lastCacheUpdate;
 
+  SyncProgress? _syncProgress;
+  SyncProgress? get syncProgress => _syncProgress;
+  bool get isFirstSyncInProgress => _syncProgress != null;
+
   bool _isLoading = false;
   bool _isInitialized = false;
+  bool _isLoadingAllData = false;
   String? _error;
 
   static const String _playlistsCacheKey = 'cached_playlists';
@@ -231,8 +237,13 @@ class LibraryProvider extends ChangeNotifier {
       _audioHandler.notifyAutoChildrenChanged();
 
       // 3. Launch server sync in background without 'await'.
-      if (!_serverOfflineMode) {
-        _performBackgroundInitialSync();
+      if (!_serverOfflineMode && !_localOnlyMode) {
+        if (_cachedAllSongs.isEmpty) {
+          // Trigger full sync immediately if library is empty
+          _refreshAllDataInBackground();
+        } else {
+          _performBackgroundInitialSync();
+        }
       }
 
       _preloadCoverArt();
@@ -338,7 +349,16 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   Future<void> _refreshAllDataInBackground() async {
+    if (_isLoadingAllData) return;
+    _isLoadingAllData = true;
+    final syncStartTime = DateTime.now();
+
     try {
+      _syncProgress = SyncProgress(
+        statusMessage: 'Démarrage de la synchronisation...',
+      );
+      notifyListeners();
+
       const pageSize = 500;
       int offset = 0;
       final List<Album> allAlbums = [];
@@ -346,9 +366,13 @@ class LibraryProvider extends ChangeNotifier {
       final seenAlbumIds = <String>{};
       final seenArtistIds = <String>{};
 
-      // FETCH PHASE: Collect data from server. 
-      // We no longer clear DB at the start.
-      
+      // 1. ALBUMS PHASE
+      _syncProgress = _syncProgress?.copyWith(
+        currentCategory: SyncCategory.albums,
+        statusMessage: 'Synchronisation des albums...',
+      );
+      notifyListeners();
+
       while (true) {
         final page = await _subsonicService.getAlbumList(
           type: 'alphabeticalByName',
@@ -362,10 +386,24 @@ class LibraryProvider extends ChangeNotifier {
         }
         allAlbums.addAll(page);
         await _db.insertAlbumsBatch(page);
+
+        _syncProgress = _syncProgress?.copyWith(
+          albumsCurrent: allAlbums.length,
+          // totalAlbums can be estimated or fetched if available
+        );
+        notifyListeners();
         
         if (page.length < pageSize) break;
         offset += pageSize;
       }
+
+      // 2. SONGS PHASE
+      _syncProgress = _syncProgress?.copyWith(
+        currentCategory: SyncCategory.songs,
+        statusMessage: 'Synchronisation des morceaux...',
+        albumsTotal: allAlbums.length,
+      );
+      notifyListeners();
 
       if (_subsonicService.isJellyfin) {
         try {
@@ -380,41 +418,64 @@ class LibraryProvider extends ChangeNotifier {
       }
 
       if (seenSongIds.isEmpty) {
-        // Optimization: Use global paginated search to fetch all songs at once
-        // instead of iterating through every album (Legacy N+1 problem).
         int songOffset = 0;
         const songPageSize = 500;
         
         while (true) {
-          final songsPage = await _subsonicService.getAllSongsGlobal(
+          final result = await _subsonicService.getAllSongsGlobal(
             size: songPageSize,
             offset: songOffset,
           );
-          if (songsPage.isEmpty) break;
+          if (result.songs.isEmpty) break;
 
-          for (var s in songsPage) {
+          for (var s in result.songs) {
             seenSongIds.add(s.id);
           }
-          await _db.insertSongsBatch(songsPage);
+          await _db.insertSongsBatch(result.songs);
 
-          if (songsPage.length < songPageSize) break;
+          _syncProgress = _syncProgress?.copyWith(
+            songsCurrent: seenSongIds.length,
+            songsTotal: result.totalSongs,
+            albumsTotal: result.totalAlbums,
+            artistsTotal: result.totalArtists,
+          );
+          notifyListeners();
+
+          if (result.songs.length < songPageSize) break;
           songOffset += songPageSize;
         }
       }
 
-      // Also track artists from the main artist list
+      // 3. ARTISTS PHASE
+      _syncProgress = _syncProgress?.copyWith(
+        currentCategory: SyncCategory.artists,
+        statusMessage: 'Synchronisation des artistes...',
+      );
+      notifyListeners();
+
       try {
         final artists = await _subsonicService.getArtists();
         for (var a in artists) {
           seenArtistIds.add(a.id);
         }
         await _db.insertArtistsBatch(artists);
+        
+        _syncProgress = _syncProgress?.copyWith(
+          artistsCurrent: artists.length,
+          artistsTotal: artists.length,
+        );
+        notifyListeners();
       } catch (e) {
         debugPrint('Error syncing artists during full refresh: $e');
       }
 
-      // CLEANUP PHASE: Only remove what wasn't seen in this successful run.
-      // This is atomic and safe because we only reach this if the fetch phase succeeded.
+      // 4. CLEANUP PHASE
+      _syncProgress = _syncProgress?.copyWith(
+        currentCategory: SyncCategory.cleanup,
+        statusMessage: 'Nettoyage des données...',
+      );
+      notifyListeners();
+
       await _db.cleanupStaleServerData(
         seenSongIds: seenSongIds,
         seenAlbumIds: seenAlbumIds,
@@ -426,11 +487,29 @@ class LibraryProvider extends ChangeNotifier {
       _lastCacheUpdate = DateTime.now();
 
       await _saveCachedData();
+      
+      _syncProgress = _syncProgress?.copyWith(
+        currentCategory: SyncCategory.complete,
+        statusMessage: 'Synchronisation terminée !',
+      );
+      notifyListeners();
+
+      // Ensure the sync screen stays visible for at least 4 seconds total
+      final elapsed = DateTime.now().difference(syncStartTime);
+      if (elapsed < const Duration(seconds: 4)) {
+        await Future.delayed(const Duration(seconds: 4) - elapsed);
+      }
+      
+      _syncProgress = null;
       notifyListeners();
       
       debugPrint('Background refresh complete. Library is now up to date.');
     } catch (e) {
       debugPrint('Error refreshing all data: $e - Local cache remains untouched.');
+      _syncProgress = null;
+      notifyListeners();
+    } finally {
+      _isLoadingAllData = false;
     }
   }
 

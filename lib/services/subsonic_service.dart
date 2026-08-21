@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'package:uuid/uuid.dart';
 import '../models/models.dart';
+import '../models/bulk_sync_result.dart';
 
 class SubsonicService {
   ServerConfig? _config;
@@ -798,8 +799,8 @@ class SubsonicService {
 
   /// Specialized method for library synchronization.
   /// Fetches a page of songs using an empty search query.
-  Future<List<Song>> getAllSongsGlobal({int size = 500, int offset = 0}) async {
-    if (_config == null) return [];
+  Future<BulkSyncResult> getAllSongsGlobal({int size = 500, int offset = 0}) async {
+    if (_config == null) return BulkSyncResult(songs: []);
     try {
       final params = _getAuthParams();
       params.addAll({
@@ -817,15 +818,33 @@ class SubsonicService {
         final searchResult = data['subsonic-response']?['searchResult3'];
         if (searchResult != null) {
           final songs = searchResult['song'];
+          
+          // Safely parse totals from attributes
+          final totalSongs = _parseInt(searchResult['totalSongCount']);
+          final totalAlbums = _parseInt(searchResult['totalAlbumCount']);
+          final totalArtists = _parseInt(searchResult['totalArtistCount']);
+
           if (songs is List) {
-            return songs.map((s) => Song.fromJson(s)).toList();
+            return BulkSyncResult(
+              songs: songs.map((s) => Song.fromJson(s)).toList(),
+              totalSongs: totalSongs,
+              totalAlbums: totalAlbums,
+              totalArtists: totalArtists,
+            );
           }
         }
       }
     } catch (e) {
       debugPrint('Error in global song fetch: $e');
     }
-    return [];
+    return BulkSyncResult(songs: []);
+  }
+
+  int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 
   Map<String, String> _getAuthParams() {
