@@ -1,8 +1,6 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../models/song.dart';
 import '../models/album.dart';
 import '../models/artist.dart';
@@ -23,7 +21,7 @@ import 'all_songs_screen.dart';
 import 'downloads_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../services/offline_service.dart';
-import '../widgets/album_artwork.dart' show isLocalFilePath;
+import '../widgets/album_artwork.dart';
 import '../utils/genre_translator.dart';
 
 class LibraryScreen extends StatefulWidget {
@@ -519,17 +517,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 
   Widget _buildLibraryItem(BuildContext context, _LibraryItem item) {
-    final subsonicService = Provider.of<SubsonicService>(
-      context,
-      listen: false,
-    );
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
-    final coverArtUrl = item.coverArt != null
-        ? (isLocalFilePath(item.coverArt)
-        ? item.coverArt!
-        : subsonicService.getCoverArtUrl(item.coverArt!, size: 120))
-        : null;
 
     final String typeLabel = switch (item.type) {
       'Playlist' => l10n.filterPlaylists,
@@ -539,30 +528,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
       _ => item.type,
     };
 
-    final Widget artwork = ClipRRect(
-      borderRadius: BorderRadius.circular(item.type == 'Artist' ? 28 : 4),
-      child: SizedBox(
-        width: 56,
-        height: 56,
-        child: coverArtUrl != null
-            ? (isLocalFilePath(coverArtUrl)
-            ? Image.file(
-          File(coverArtUrl),
-          fit: BoxFit.cover,
-          errorBuilder: (ctx, err, stack) =>
-              _buildPlaceholder(item.type, isDark),
-        )
-            : CachedNetworkImage(
-          imageUrl: coverArtUrl,
-          fit: BoxFit.cover,
-          placeholder: (ctx, url) =>
-              Container(color: Colors.grey[800]),
-          errorWidget: (ctx, url, err) =>
-              _buildPlaceholder(item.type, isDark),
-        ))
-            : _buildPlaceholder(item.type, isDark),
-      ),
-    );
+    final Widget artwork = item.coverArt != null && item.coverArt!.isNotEmpty
+        ? AlbumArtwork(
+            coverArt: item.coverArt,
+            size: 56,
+            borderRadius: item.type == 'Artist' ? 28 : 4,
+          )
+        : ClipRRect(
+            borderRadius: BorderRadius.circular(item.type == 'Artist' ? 28 : 4),
+            child: SizedBox(
+              width: 56,
+              height: 56,
+              child: _buildPlaceholder(item.type, isDark),
+            ),
+          );
 
     return InkWell(
       onTap: () => _openItem(context, item),
