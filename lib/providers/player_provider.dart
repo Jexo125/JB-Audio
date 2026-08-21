@@ -308,7 +308,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
       await _audioPlayer.setUrl(
         audioUri.toString(),
-        headers: {'User-Agent': 'JB Audio/1.0.3'},
+        headers: {'User-Agent': 'JB Audio/2.0.0'},
       );
       await _audioPlayer.seek(pos);
       if (wasPlaying) {
@@ -906,7 +906,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
       await _audioPlayer.setUrl(
         audioUri.toString(),
-        headers: {'User-Agent': 'JB Audio/1.0.3'},
+        headers: {'User-Agent': 'JB Audio/2.0.0'},
       );
       await _audioPlayer.play();
       _isPlaying = true;
