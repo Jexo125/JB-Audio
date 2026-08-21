@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:crypto/crypto.dart';
+import 'package:uuid/uuid.dart';
 import '../models/models.dart';
 
 class SubsonicService {
@@ -30,13 +32,7 @@ class SubsonicService {
 
     try {
       final url = Uri.parse('${_config!.serverUrl}/rest/ping.view').replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-        },
+        queryParameters: _getAuthParams(),
       );
 
       final response = await http.get(url).timeout(const Duration(seconds: 10));
@@ -86,26 +82,28 @@ class SubsonicService {
 
   String getCoverArtUrl(String? coverArtId, {int? size}) {
     if (_config == null || coverArtId == null || coverArtId.isEmpty) return '';
-    final sizeParam = size != null ? '&size=$size' : '';
-    return '${_config!.serverUrl}/rest/getCoverArt.view?u=${_config!.username}&p=${_config!.password ?? ''}&v=1.16.1&c=Musly&f=json&id=$coverArtId$sizeParam';
+    final params = _getAuthParams();
+    params['id'] = coverArtId;
+    if (size != null) params['size'] = size.toString();
+    return Uri.parse('${_config!.serverUrl}/rest/getCoverArt.view')
+        .replace(queryParameters: params)
+        .toString();
   }
 
-  Future<List<Album>> getAlbumList({required String type, int size = 20, int offset = 0, String? genre}) async {
+  Future<List<Album>> getAlbumList(
+      {required String type, int size = 20, int offset = 0, String? genre}) async {
     if (_config == null) return [];
     try {
-      final params = {
-        'u': _config!.username,
-        'p': _config!.password ?? '',
-        'v': '1.16.1',
-        'c': 'Musly',
-        'f': 'json',
+      final params = _getAuthParams();
+      params.addAll({
         'type': type,
         'size': size.toString(),
         'offset': offset.toString(),
-      };
+      });
       if (genre != null) params['genre'] = genre;
 
-      final url = Uri.parse('${_config!.serverUrl}/rest/getAlbumList2.view').replace(queryParameters: params);
+      final url = Uri.parse('${_config!.serverUrl}/rest/getAlbumList2.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -128,17 +126,12 @@ class SubsonicService {
   Future<List<Song>> getRandomSongs({int size = 50, String? genre}) async {
     if (_config == null) return [];
     try {
-      final params = {
-        'u': _config!.username,
-        'p': _config!.password ?? '',
-        'v': '1.16.1',
-        'c': 'Musly',
-        'f': 'json',
-        'size': size.toString(),
-      };
+      final params = _getAuthParams();
+      params['size'] = size.toString();
       if (genre != null) params['genre'] = genre;
 
-      final url = Uri.parse('${_config!.serverUrl}/rest/getRandomSongs.view').replace(queryParameters: params);
+      final url = Uri.parse('${_config!.serverUrl}/rest/getRandomSongs.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -157,16 +150,10 @@ class SubsonicService {
   Future<List<Song>> getAlbumSongs(String albumId) async {
     if (_config == null) return [];
     try {
-      final url = Uri.parse('${_config!.serverUrl}/rest/getAlbum.view').replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-          'id': albumId,
-        },
-      );
+      final params = _getAuthParams();
+      params['id'] = albumId;
+      final url = Uri.parse('${_config!.serverUrl}/rest/getAlbum.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -185,16 +172,10 @@ class SubsonicService {
   Future<Album?> getAlbum(String albumId) async {
     if (_config == null) return null;
     try {
-      final url = Uri.parse('${_config!.serverUrl}/rest/getAlbum.view').replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-          'id': albumId,
-        },
-      );
+      final params = _getAuthParams();
+      params['id'] = albumId;
+      final url = Uri.parse('${_config!.serverUrl}/rest/getAlbum.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -213,15 +194,8 @@ class SubsonicService {
   Future<List<Artist>> getArtists() async {
     if (_config == null) return [];
     try {
-      final url = Uri.parse('${_config!.serverUrl}/rest/getArtists.view').replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-        },
-      );
+      final url = Uri.parse('${_config!.serverUrl}/rest/getArtists.view')
+          .replace(queryParameters: _getAuthParams());
       final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -249,16 +223,10 @@ class SubsonicService {
   Future<List<Album>> getArtistAlbums(String artistId) async {
     if (_config == null) return [];
     try {
-      final url = Uri.parse('${_config!.serverUrl}/rest/getArtist.view').replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-          'id': artistId,
-        },
-      );
+      final params = _getAuthParams();
+      params['id'] = artistId;
+      final url = Uri.parse('${_config!.serverUrl}/rest/getArtist.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -277,16 +245,10 @@ class SubsonicService {
   Future<Artist?> getArtist(String artistId) async {
     if (_config == null) return null;
     try {
-      final url = Uri.parse('${_config!.serverUrl}/rest/getArtist.view').replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-          'id': artistId,
-        },
-      );
+      final params = _getAuthParams();
+      params['id'] = artistId;
+      final url = Uri.parse('${_config!.serverUrl}/rest/getArtist.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -305,17 +267,10 @@ class SubsonicService {
   Future<ArtistInfo?> getArtistInfo(String artistId) async {
     if (_config == null) return null;
     try {
-      final url =
-          Uri.parse('${_config!.serverUrl}/rest/getArtistInfo2.view').replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-          'id': artistId,
-        },
-      );
+      final params = _getAuthParams();
+      params['id'] = artistId;
+      final url = Uri.parse('${_config!.serverUrl}/rest/getArtistInfo2.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -334,15 +289,8 @@ class SubsonicService {
   Future<List<Playlist>> getPlaylists() async {
     if (_config == null) return [];
     try {
-      final url = Uri.parse('${_config!.serverUrl}/rest/getPlaylists.view').replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-        },
-      );
+      final url = Uri.parse('${_config!.serverUrl}/rest/getPlaylists.view')
+          .replace(queryParameters: _getAuthParams());
       final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -361,16 +309,10 @@ class SubsonicService {
   Future<Playlist> getPlaylist(String playlistId) async {
     if (_config == null) throw Exception('Not configured');
     try {
-      final url = Uri.parse('${_config!.serverUrl}/rest/getPlaylist.view').replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-          'id': playlistId,
-        },
-      );
+      final params = _getAuthParams();
+      params['id'] = playlistId;
+      final url = Uri.parse('${_config!.serverUrl}/rest/getPlaylist.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -386,24 +328,20 @@ class SubsonicService {
     throw Exception('Failed to load playlist');
   }
 
-  Future<bool> createPlaylist({required String name, List<String>? songIds}) async {
+  Future<bool> createPlaylist(
+      {required String name, List<String>? songIds}) async {
     if (_config == null) return false;
     try {
-      final params = {
-        'u': _config!.username,
-        'p': _config!.password ?? '',
-        'v': '1.16.1',
-        'c': 'Musly',
-        'f': 'json',
-        'name': name,
-      };
+      final params = _getAuthParams();
+      params['name'] = name;
       if (songIds != null) {
         for (int i = 0; i < songIds.length; i++) {
           params['songId[$i]'] = songIds[i];
         }
       }
 
-      final url = Uri.parse('${_config!.serverUrl}/rest/createPlaylist.view').replace(queryParameters: params);
+      final url = Uri.parse('${_config!.serverUrl}/rest/createPlaylist.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 15));
       return response.statusCode == 200;
     } catch (e) {
@@ -415,16 +353,10 @@ class SubsonicService {
   Future<bool> deletePlaylist(String playlistId) async {
     if (_config == null) return false;
     try {
-      final url = Uri.parse('${_config!.serverUrl}/rest/deletePlaylist.view').replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-          'id': playlistId,
-        },
-      );
+      final params = _getAuthParams();
+      params['id'] = playlistId;
+      final url = Uri.parse('${_config!.serverUrl}/rest/deletePlaylist.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 15));
       return response.statusCode == 200;
     } catch (e) {
@@ -440,14 +372,8 @@ class SubsonicService {
   }) async {
     if (_config == null) return false;
     try {
-      final params = {
-        'u': _config!.username,
-        'p': _config!.password ?? '',
-        'v': '1.16.1',
-        'c': 'Musly',
-        'f': 'json',
-        'playlistId': playlistId,
-      };
+      final params = _getAuthParams();
+      params['playlistId'] = playlistId;
       if (songIdsToAdd != null) {
         for (int i = 0; i < songIdsToAdd.length; i++) {
           params['songIdToAdd[$i]'] = songIdsToAdd[i];
@@ -459,7 +385,8 @@ class SubsonicService {
         }
       }
 
-      final url = Uri.parse('${_config!.serverUrl}/rest/updatePlaylist.view').replace(queryParameters: params);
+      final url = Uri.parse('${_config!.serverUrl}/rest/updatePlaylist.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 15));
       return response.statusCode == 200;
     } catch (e) {
@@ -471,15 +398,8 @@ class SubsonicService {
   Future<List<Genre>> getGenres() async {
     if (_config == null) return [];
     try {
-      final url = Uri.parse('${_config!.serverUrl}/rest/getGenres.view').replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-        },
-      );
+      final url = Uri.parse('${_config!.serverUrl}/rest/getGenres.view')
+          .replace(queryParameters: _getAuthParams());
       final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -503,19 +423,16 @@ class SubsonicService {
   }) async {
     if (_config == null) return SearchResult(songs: [], albums: [], artists: []);
     try {
-      final url = Uri.parse('${_config!.serverUrl}/rest/search3.view').replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-          'query': query,
-          'artistCount': artistCount.toString(),
-          'albumCount': albumCount.toString(),
-          'songCount': songCount.toString(),
-        },
-      );
+      final params = _getAuthParams();
+      params.addAll({
+        'query': query,
+        'artistCount': artistCount.toString(),
+        'albumCount': albumCount.toString(),
+        'songCount': songCount.toString(),
+      });
+
+      final url = Uri.parse('${_config!.serverUrl}/rest/search3.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -538,15 +455,8 @@ class SubsonicService {
   Future<SearchResult> getStarred() async {
     if (_config == null) return SearchResult(songs: [], albums: [], artists: []);
     try {
-      final url = Uri.parse('${_config!.serverUrl}/rest/getStarred2.view').replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-        },
-      );
+      final url = Uri.parse('${_config!.serverUrl}/rest/getStarred2.view')
+          .replace(queryParameters: _getAuthParams());
       final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -569,18 +479,13 @@ class SubsonicService {
   Future<bool> star({String? id, String? albumId, String? artistId}) async {
     if (_config == null) return false;
     try {
-      final params = {
-        'u': _config!.username,
-        'p': _config!.password ?? '',
-        'v': '1.16.1',
-        'c': 'Musly',
-        'f': 'json',
-      };
+      final params = _getAuthParams();
       if (id != null) params['id'] = id;
       if (albumId != null) params['albumId'] = albumId;
       if (artistId != null) params['artistId'] = artistId;
 
-      final url = Uri.parse('${_config!.serverUrl}/rest/star.view').replace(queryParameters: params);
+      final url = Uri.parse('${_config!.serverUrl}/rest/star.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 10));
       return response.statusCode == 200;
     } catch (e) {
@@ -592,18 +497,13 @@ class SubsonicService {
   Future<bool> unstar({String? id, String? albumId, String? artistId}) async {
     if (_config == null) return false;
     try {
-      final params = {
-        'u': _config!.username,
-        'p': _config!.password ?? '',
-        'v': '1.16.1',
-        'c': 'Musly',
-        'f': 'json',
-      };
+      final params = _getAuthParams();
       if (id != null) params['id'] = id;
       if (albumId != null) params['albumId'] = albumId;
       if (artistId != null) params['artistId'] = artistId;
 
-      final url = Uri.parse('${_config!.serverUrl}/rest/unstar.view').replace(queryParameters: params);
+      final url = Uri.parse('${_config!.serverUrl}/rest/unstar.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 10));
       return response.statusCode == 200;
     } catch (e) {
@@ -668,14 +568,8 @@ class SubsonicService {
       {Map<String, String>? params}) async {
     if (_config == null) throw Exception('Not configured');
     try {
-      final queryParams = {
-        'u': _config!.username,
-        'p': _config!.password ?? '',
-        'v': '1.16.1',
-        'c': 'Musly',
-        'f': 'json',
-        'action': action,
-      };
+      final queryParams = _getAuthParams();
+      queryParams['action'] = action;
       if (params != null) queryParams.addAll(params);
 
       final url = Uri.parse('${_config!.serverUrl}/rest/jukeboxControl.view')
@@ -703,18 +597,13 @@ class SubsonicService {
   Future<List<Song>> getSimilarSongs(String id, {int count = 20}) async {
     if (_config == null) return [];
     try {
+      final params = _getAuthParams();
+      params.addAll({
+        'id': id,
+        'count': count.toString(),
+      });
       final url = Uri.parse('${_config!.serverUrl}/rest/getSimilarSongs2.view')
-          .replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-          'id': id,
-          'count': count.toString(),
-        },
-      );
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 15));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -732,18 +621,13 @@ class SubsonicService {
   Future<List<Song>> getArtistTopSongs(String artistId, {int count = 20}) async {
     if (_config == null) return [];
     try {
+      final params = _getAuthParams();
+      params.addAll({
+        'artist': artistId,
+        'count': count.toString(),
+      });
       final url = Uri.parse('${_config!.serverUrl}/rest/getTopSongs.view')
-          .replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-          'artist': artistId, 
-          'count': count.toString(),
-        },
-      );
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 15));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -761,16 +645,10 @@ class SubsonicService {
   Future<Map<String, dynamic>?> getLyricsBySongId(String id) async {
     if (_config == null) return null;
     try {
-      final url = Uri.parse('${_config!.serverUrl}/rest/getLyrics.view').replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-          'id': id,
-        },
-      );
+      final params = _getAuthParams();
+      params['id'] = id;
+      final url = Uri.parse('${_config!.serverUrl}/rest/getLyrics.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -782,22 +660,16 @@ class SubsonicService {
     return null;
   }
 
-  Future<Map<String, dynamic>?> getLyrics({String? artist, String? title}) async {
+  Future<Map<String, dynamic>?> getLyrics(
+      {String? artist, String? title}) async {
     if (_config == null) return null;
     try {
-      final params = {
-        'u': _config!.username,
-        'p': _config!.password ?? '',
-        'v': '1.16.1',
-        'c': 'Musly',
-        'f': 'json',
-      };
+      final params = _getAuthParams();
       if (artist != null) params['artist'] = artist;
       if (title != null) params['title'] = title;
 
-      final url = Uri.parse('${_config!.serverUrl}/rest/getLyrics.view').replace(
-        queryParameters: params,
-      );
+      final url = Uri.parse('${_config!.serverUrl}/rest/getLyrics.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -812,17 +684,9 @@ class SubsonicService {
   Future<List<RadioStation>> getInternetRadioStations() async {
     if (_config == null) return [];
     try {
-      final url =
-          Uri.parse('${_config!.serverUrl}/rest/getInternetRadioStations.view')
-              .replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-        },
-      );
+      final url = Uri.parse(
+              '${_config!.serverUrl}/rest/getInternetRadioStations.view')
+          .replace(queryParameters: _getAuthParams());
       final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -841,13 +705,21 @@ class SubsonicService {
 
   String getDownloadUrl(String id) {
     if (_config == null) return '';
-    return '${_config!.serverUrl}/rest/download.view?u=${_config!.username}&p=${_config!.password ?? ''}&v=1.16.1&c=Musly&f=json&id=$id';
+    final params = _getAuthParams();
+    params['id'] = id;
+    return Uri.parse('${_config!.serverUrl}/rest/download.view')
+        .replace(queryParameters: params)
+        .toString();
   }
 
   String getStreamUrl(String id, {int? maxBitRate}) {
     if (_config == null) throw Exception('Not configured');
-    final bitrateParam = maxBitRate != null ? '&maxBitRate=$maxBitRate' : '';
-    return '${_config!.serverUrl}/rest/stream.view?u=${_config!.username}&p=${_config!.password ?? ''}&v=1.16.1&c=Musly&f=json&id=$id$bitrateParam';
+    final params = _getAuthParams();
+    params['id'] = id;
+    if (maxBitRate != null) params['maxBitRate'] = maxBitRate.toString();
+    return Uri.parse('${_config!.serverUrl}/rest/stream.view')
+        .replace(queryParameters: params)
+        .toString();
   }
 
   Future<String> resolveStreamUrlAsync(Song song) async {
@@ -857,17 +729,13 @@ class SubsonicService {
   Future<bool> setRating(String id, int rating) async {
     if (_config == null) return false;
     try {
-      final url = Uri.parse('${_config!.serverUrl}/rest/setRating.view').replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-          'id': id,
-          'rating': rating.toString(),
-        },
-      );
+      final params = _getAuthParams();
+      params.addAll({
+        'id': id,
+        'rating': rating.toString(),
+      });
+      final url = Uri.parse('${_config!.serverUrl}/rest/setRating.view')
+          .replace(queryParameters: params);
       final response = await http.get(url).timeout(const Duration(seconds: 10));
       return response.statusCode == 200;
     } catch (e) {
@@ -880,15 +748,7 @@ class SubsonicService {
     if (_config == null) return [];
     try {
       final url = Uri.parse('${_config!.serverUrl}/rest/getMusicFolders.view')
-          .replace(
-        queryParameters: {
-          'u': _config!.username,
-          'p': _config!.password ?? '',
-          'v': '1.16.1',
-          'c': 'Musly',
-          'f': 'json',
-        },
-      );
+          .replace(queryParameters: _getAuthParams());
       final response = await http.get(url).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -903,5 +763,51 @@ class SubsonicService {
       debugPrint('Error getting music folders: $e');
     }
     return [];
+  }
+
+  Future<bool> nowPlaying(String id) async {
+    if (_config == null) return false;
+    try {
+      final params = _getAuthParams();
+      params['id'] = id;
+      final url = Uri.parse('${_config!.serverUrl}/rest/nowPlaying.view')
+          .replace(queryParameters: params);
+      final response = await http.get(url).timeout(const Duration(seconds: 10));
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Error reporting now playing: $e');
+      return false;
+    }
+  }
+
+  Future<bool> scrobble(String id, {bool submission = true}) async {
+    if (_config == null) return false;
+    try {
+      final params = _getAuthParams();
+      params['id'] = id;
+      params['submission'] = submission.toString();
+      final url = Uri.parse('${_config!.serverUrl}/rest/scrobble.view')
+          .replace(queryParameters: params);
+      final response = await http.get(url).timeout(const Duration(seconds: 10));
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Error scrobbling: $e');
+      return false;
+    }
+  }
+
+  Map<String, String> _getAuthParams() {
+    if (_config == null) return {};
+    final salt = const Uuid().v4().substring(0, 8);
+    final token =
+        md5.convert(utf8.encode((_config!.password ?? '') + salt)).toString();
+    return {
+      'u': _config!.username,
+      't': token,
+      's': salt,
+      'v': '1.16.1',
+      'c': 'JB Audio',
+      'f': 'json',
+    };
   }
 }

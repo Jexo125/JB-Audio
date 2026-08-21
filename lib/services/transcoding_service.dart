@@ -1,6 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TranscodeBitrate {
@@ -192,29 +196,112 @@ class TranscodingService extends ChangeNotifier {
     return _format == TranscodeFormat.original ? null : _format;
   }
 
+  Future<String?> getTranscodeDecision(
+    String songId, {
+    required String serverUrl,
+    required String username,
+    required String password,
+  }) async {
+    final bitrate = getCurrentBitrate();
+    if (bitrate == null) return null;
+
+    final salt = _generateRandomSalt();
+    final token = md5.convert(utf8.encode(password + salt)).toString();
+
+    final url = Uri.parse('$serverUrl/rest/getTranscodeDecision.view').replace(
+      queryParameters: {
+        'u': username,
+        't': token,
+        's': salt,
+        'v': '1.16.1',
+        'c': 'JB Audio',
+        'f': 'json',
+        'id': songId,
+      },
+    );
+
+    final clientInfo = {
+      "name": "JB Audio",
+      "platform": "Android",
+      "maxAudioBitrate": 0,
+      "maxTranscodingAudioBitrate": bitrate * 1000,
+      "directPlayProfiles": [
+        {
+          "containers": ["flac", "mp3", "ogg", "opus", "m4a"],
+          "audioCodecs": ["flac", "mp3", "vorbis", "opus", "aac"],
+          "protocols": ["http"],
+          "maxAudioChannels": 2
+        }
+      ],
+      "transcodingProfiles": [
+        {
+          "container": _format == TranscodeFormat.original ? "mp3" : _format,
+          "audioCodec": _format == TranscodeFormat.original ? "mp3" : _format,
+          "protocol": "http",
+          "maxAudioChannels": 2
+        }
+      ]
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(clientInfo),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final decision = data['subsonic-response']?['transcodeDecision'];
+        if (decision != null && decision['canTranscode'] == true) {
+          return decision['transcodeParams'] as String?;
+        }
+      }
+    } catch (e) {
+      debugPrint('Error getting transcode decision: $e');
+    }
+    return null;
+  }
+
   Uri getStreamUri(
     String id, {
     required String serverUrl,
     required String username,
     required String password,
+    String? transcodeParams,
   }) {
     final bitrate = getCurrentBitrate();
     final format = getCurrentFormat();
 
+    final salt = _generateRandomSalt();
+    final token = md5.convert(utf8.encode(password + salt)).toString();
+
     final params = {
       'u': username,
-      'p': password,
+      't': token,
+      's': salt,
       'v': '1.16.1',
-      'c': 'Musly',
-      'f': 'json',
+      'c': 'JB Audio',
       'id': id,
+      'estimateContentLength': 'true',
     };
 
-    if (bitrate != null) params['maxBitRate'] = bitrate.toString();
-    if (format != null) params['format'] = format;
+    if (transcodeParams != null) {
+      params['transcodeParams'] = transcodeParams;
+    } else {
+      if (bitrate != null) params['maxBitRate'] = bitrate.toString();
+      if (format != null) params['format'] = format;
+    }
 
     return Uri.parse('$serverUrl/rest/stream.view')
         .replace(queryParameters: params);
+  }
+
+  String _generateRandomSalt() {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    final random = Random();
+    return List.generate(8, (index) => chars[random.nextInt(chars.length)])
+        .join();
   }
 
   @override

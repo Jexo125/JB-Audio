@@ -50,6 +50,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   bool _isRenderingRemotely = false;
   String? _resolvedArtworkUrl;
+  String? _currentTranscodeParams;
 
   RadioStation? _currentRadioStation;
   bool _isPlayingRadio = false;
@@ -94,6 +95,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _upnpService.addListener(_onUpnpStateChanged);
     _upnpService.onRendererLost = _onUpnpRendererLost;
     _jukeboxService.addListener(_onJukeboxEnabledChanged);
+    _transcodingService.addListener(_onTranscodingSettingsChanged);
     _initializePlayer();
     _onJukeboxEnabledChanged();
     try {
@@ -271,6 +273,52 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     if (changed) {
       notifyListeners();
       _updateAndroidAuto();
+    }
+  }
+
+  void _onTranscodingSettingsChanged() {
+    if (_isPlaying && _currentSong != null && !_currentSong!.isLocal) {
+      _hotSwapQuality();
+    }
+  }
+
+  Future<void> _hotSwapQuality() async {
+    if (_currentSong == null) return;
+    final pos = _audioPlayer.position;
+    final wasPlaying = _audioPlayer.playing;
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _currentTranscodeParams = await _transcodingService.getTranscodeDecision(
+        _currentSong!.id,
+        serverUrl: _subsonicService.config?.serverUrl ?? '',
+        username: _subsonicService.config?.username ?? '',
+        password: _subsonicService.config?.password ?? '',
+      );
+
+      final audioUri = _transcodingService.getStreamUri(
+        _currentSong!.id,
+        serverUrl: _subsonicService.config?.serverUrl ?? '',
+        username: _subsonicService.config?.username ?? '',
+        password: _subsonicService.config?.password ?? '',
+        transcodeParams: _currentTranscodeParams,
+      );
+
+      await _audioPlayer.setUrl(
+        audioUri.toString(),
+        headers: {'User-Agent': 'JB Audio/1.0.3'},
+      );
+      await _audioPlayer.seek(pos);
+      if (wasPlaying) {
+        await _audioPlayer.play();
+      }
+    } catch (e) {
+      debugPrint('Error hot-swapping quality: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -750,6 +798,10 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> _handleSongCompletion() async {
+    if (_currentSong != null && !_currentSong!.isLocal) {
+      _subsonicService.scrobble(_currentSong!.id);
+    }
+
     if (_shuffleEnabled) {
       await skipNext();
       return;
@@ -833,15 +885,29 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       if (_currentSong!.isLocal && _currentSong!.path != null) {
         audioUri = Uri.file(_currentSong!.path!);
       } else {
-        audioUri = _transcodingService.getStreamUri(
+        _currentTranscodeParams = await _transcodingService.getTranscodeDecision(
           _currentSong!.id,
           serverUrl: _subsonicService.config?.serverUrl ?? '',
           username: _subsonicService.config?.username ?? '',
           password: _subsonicService.config?.password ?? '',
         );
+
+        audioUri = _transcodingService.getStreamUri(
+          _currentSong!.id,
+          serverUrl: _subsonicService.config?.serverUrl ?? '',
+          username: _subsonicService.config?.username ?? '',
+          password: _subsonicService.config?.password ?? '',
+          transcodeParams: _currentTranscodeParams,
+        );
+
+        // Report Now Playing to Subsonic
+        _subsonicService.scrobble(_currentSong!.id, submission: false);
       }
 
-      await _audioPlayer.setUrl(audioUri.toString());
+      await _audioPlayer.setUrl(
+        audioUri.toString(),
+        headers: {'User-Agent': 'JB Audio/1.0.3'},
+      );
       await _audioPlayer.play();
       _isPlaying = true;
     } catch (e) {
