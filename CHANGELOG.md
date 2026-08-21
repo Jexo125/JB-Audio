@@ -5,6 +5,12 @@ All notable changes to JB Audio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-08-21 — Version corrective
+
+### 🚀 Correctifs
+- **File de lecture** : Correction de l'affichage des pochettes grises dans la liste "À suivre".
+- **Stabilité visuelle** : Stabilisation du chargement des images lors des rafraîchissements fréquents de l'interface (barre de progression).
+
 ## [2.0.0] - 2026-08-21 — Première version majeure
 
 ### 🚀 Lecture et transcodage
