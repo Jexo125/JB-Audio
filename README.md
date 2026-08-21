@@ -21,7 +21,7 @@ JB Audio 2.0 intègre pleinement la négociation de transcodage pour une gestion
 Une intégration parfaite avec votre serveur Navidrome :
 - **Signalement en temps réel** : Vos morceaux apparaissent immédiatement dans l'interface "Now Playing" de Navidrome.
 - **Scrobbling Natif** : Signalement précis de la lecture via `scrobble.view?submission=false`.
-- **Identification** : L'application s'identifie désormais comme `JB Audio/2.0.1` auprès du serveur.
+- **Identification** : L'application s'identifie désormais comme `JB Audio/2.0.2` auprès du serveur.
 
 ---
 
