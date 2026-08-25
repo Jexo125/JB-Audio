@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' hide RepeatMode;
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../providers/player_provider.dart';
 
 class PlaybackControls extends StatelessWidget {
@@ -41,6 +42,8 @@ class PlaybackControls extends StatelessWidget {
           icon: Icons.skip_previous_rounded,
           size: 48,
           onTap: onPrevious,
+          onLongPressStart: () => context.read<PlayerProvider>().startFastRewind(),
+          onLongPressEnd: () => context.read<PlayerProvider>().stopSeek(),
         ),
         _PlayPauseButton(
           isPlaying: isPlaying,
@@ -51,6 +54,8 @@ class PlaybackControls extends StatelessWidget {
           icon: Icons.skip_next_rounded,
           size: 48,
           onTap: onNext,
+          onLongPressStart: () => context.read<PlayerProvider>().startFastForward(),
+          onLongPressEnd: () => context.read<PlayerProvider>().stopSeek(),
         ),
         _RepeatButton(
           mode: repeatMode,
@@ -165,11 +170,15 @@ class _MainControlButton extends StatefulWidget {
   final IconData icon;
   final double size;
   final VoidCallback onTap;
+  final VoidCallback? onLongPressStart;
+  final VoidCallback? onLongPressEnd;
 
   const _MainControlButton({
     required this.icon,
     required this.onTap,
     this.size = 48,
+    this.onLongPressStart,
+    this.onLongPressEnd,
   });
 
   @override
@@ -190,7 +199,17 @@ class _MainControlButtonState extends State<_MainControlButton> {
         setState(() => _isPressed = false);
         widget.onTap();
       },
-      onTapCancel: () => setState(() => _isPressed = false),
+      onTapCancel: () {
+        setState(() => _isPressed = false);
+        widget.onLongPressEnd?.call();
+      },
+      onLongPressStart: (_) {
+        HapticFeedback.mediumImpact();
+        widget.onLongPressStart?.call();
+      },
+      onLongPressEnd: (_) {
+        widget.onLongPressEnd?.call();
+      },
       child: AnimatedScale(
         scale: _isPressed ? 0.85 : 1.0,
         duration: const Duration(milliseconds: 100),

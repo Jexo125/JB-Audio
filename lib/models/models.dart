@@ -10,3 +10,4 @@ export 'radio_station.dart';
 export 'search_result.dart';
 export 'server_config.dart';
 export 'song.dart';
+export 'recommended_album.dart';

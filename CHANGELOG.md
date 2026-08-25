@@ -5,6 +5,19 @@ All notable changes to JB Audio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.4] - 2026-08-25
+
+### 🚀 Nouvelles fonctionnalités
+- **Recommandations** : Système de recommandations personnalisées sur l'accueil via un nouveau carrousel d'albums.
+- **Intelligence** : Recommandations basées sur l'historique d'écoute, les artistes et genres appréciés, avec diversification automatique.
+- **Multi-utilisateur** : Isolation complète des données de recommandations par utilisateur et par serveur.
+- **Avance/Recul rapide** : Support de l'avance et du recul rapide dans le lecteur principal (appui long) et le mini-lecteur (configurable).
+- **Interface** : Design responsive et localisation intégrale FR/EN.
+
+### 📈 Améliorations
+- **Découverte** : Amélioration globale de l'expérience de découverte musicale locale.
+- **Stabilité** : Conservation des optimisations de buffering (30s/60s/3MiB) et de transcodage (`estimateContentLength`).
+
 ## [2.0.3] - 2026-08-25 — Version corrective
 
 ### 🚀 Correctifs

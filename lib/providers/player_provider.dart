@@ -57,6 +57,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   SharedPreferences? _prefs;
   Timer? _persistDebounceTimer;
+  Timer? _seekTimer;
   static const String _keyQueue = 'persistent_queue';
   static const String _keyQueueIndex = 'persistent_queue_index';
   static const String _keyQueueSongId = 'persistent_queue_song_id';
@@ -830,6 +831,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> playSong(Song song, {List<Song>? playlist, int startIndex = 0}) async {
+    stopSeek();
     try {
       _isPlayingRadio = false;
       _currentRadioStation = null;
@@ -986,6 +988,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> stop() async {
+    stopSeek();
     if (_isRenderingRemotely) {
       await _stopRemotely();
     }
@@ -1000,6 +1003,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> skipNext() async {
+    stopSeek();
     if (_queue.isEmpty) return;
 
     if (_shuffleEnabled) {
@@ -1020,6 +1024,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> skipPrevious() async {
+    stopSeek();
     if (_queue.isEmpty) return;
 
     if (_position.inSeconds > 3) {
@@ -1042,6 +1047,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> skipToIndex(int index) async {
+    stopSeek();
     if (index < 0 || index >= _queue.length) return;
     _currentIndex = index;
     _currentSong = _queue[index];
@@ -1078,6 +1084,57 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         notifyListeners();
       });
     }
+  }
+
+  void startFastForward() {
+    _startSeek(true);
+  }
+
+  void startFastRewind() {
+    _startSeek(false);
+  }
+
+  void stopSeek() {
+    _seekTimer?.cancel();
+    _seekTimer = null;
+  }
+
+  void _startSeek(bool forward) {
+    if (_currentSong == null || _duration == Duration.zero) return;
+    
+    stopSeek();
+    
+    // Initial jump
+    final jump = const Duration(seconds: 5);
+    Duration target = forward ? _position + jump : _position - jump;
+    if (target < Duration.zero) target = Duration.zero;
+    if (target > _duration) target = _duration;
+    
+    seek(target);
+
+    // Periodic jumps
+    // We use a slightly longer interval for remote playback to avoid flooding
+    final interval = _isRenderingRemotely 
+        ? const Duration(milliseconds: 800) 
+        : const Duration(milliseconds: 400);
+
+    _seekTimer = Timer.periodic(interval, (timer) {
+      if (_duration == Duration.zero) {
+        stopSeek();
+        return;
+      }
+      final periodicJump = const Duration(seconds: 5);
+      Duration nextTarget = forward ? _position + periodicJump : _position - periodicJump;
+      if (nextTarget < Duration.zero) nextTarget = Duration.zero;
+      if (nextTarget > _duration) nextTarget = _duration;
+      
+      seek(nextTarget);
+
+      // Stop if we reached boundaries
+      if ((forward && nextTarget >= _duration) || (!forward && nextTarget <= Duration.zero)) {
+        stopSeek();
+      }
+    });
   }
 
   Future<void> setVolume(double volume) async {
@@ -1174,6 +1231,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> playRadioStation(RadioStation station) async {
+    stopSeek();
     try {
       _isPlayingRadio = true;
       _currentRadioStation = station;
@@ -1232,6 +1290,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _sleepTimerFadeTimer?.cancel();
     _sleepTimerFadePeriodicTimer?.cancel();
     _jukeboxPollTimer?.cancel();
+    _seekTimer?.cancel();
     super.dispose();
   }
 }

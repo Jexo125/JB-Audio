@@ -399,6 +399,34 @@ class AppLocalizationsRo extends AppLocalizations {
   String get showMiniPlayerShuffleSubtitle => 'Toggle shuffle from mini player';
 
   @override
+  String get showMiniPlayerSeekButtons => 'Show seek buttons';
+
+  @override
+  String get showMiniPlayerSeekButtonsSubtitle =>
+      'Add fast forward/rewind controls to mini player';
+
+  @override
+  String get recommendedForYou => 'Recommended for you';
+
+  @override
+  String recommendedBecauseYouLike(String artist) {
+    return 'Because you like $artist';
+  }
+
+  @override
+  String recommendedInYourStyle(String genre) {
+    return 'In your style: $genre';
+  }
+
+  @override
+  String recommendedSimilarTo(String artist) {
+    return 'Similar to $artist';
+  }
+
+  @override
+  String get recommendedFrequent => 'Often played';
+
+  @override
   String get enableRecommendations => 'Enable Recommendations';
 
   @override

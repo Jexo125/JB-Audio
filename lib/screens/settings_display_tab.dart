@@ -24,6 +24,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
   bool _showMiniPlayerHeart = false;
   bool _showMiniPlayerRepeat = false;
   bool _showMiniPlayerShuffle = false;
+  bool _showMiniPlayerSeekButtons = false;
   double _albumArtCornerRadius = 8.0;
   String _artworkShape = 'rounded';
   String _artworkShadow = 'soft';
@@ -52,6 +53,7 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
       _showMiniPlayerHeart = _playerUiSettings.getShowMiniPlayerHeart();
       _showMiniPlayerRepeat = _playerUiSettings.getShowMiniPlayerRepeat();
       _showMiniPlayerShuffle = _playerUiSettings.getShowMiniPlayerShuffle();
+      _showMiniPlayerSeekButtons = _playerUiSettings.getShowMiniPlayerSeekButtons();
       _albumArtCornerRadius = _playerUiSettings.getAlbumArtCornerRadius();
       _artworkShape = _playerUiSettings.getArtworkShape();
       _artworkShadow = _playerUiSettings.getArtworkShadow();
@@ -85,6 +87,8 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
             _buildMiniPlayerRepeatToggle(),
             const SettingsDivider(),
             _buildMiniPlayerShuffleToggle(),
+            const SettingsDivider(),
+            _buildMiniPlayerSeekButtonsToggle(),
           ],
         ),
 
@@ -350,6 +354,37 @@ class _SettingsDisplayTabState extends State<SettingsDisplayTab> {
         onChanged: (value) async {
           setState(() => _showMiniPlayerShuffle = value);
           await _playerUiSettings.setShowMiniPlayerShuffle(value);
+        },
+      ),
+    );
+  }
+
+  Widget _buildMiniPlayerSeekButtonsToggle() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: SettingsIconBadge(
+        gradientColors: const [Color(0xFF007AFF), Color(0xFF5AC8FA)],
+        icon: CupertinoIcons.forward_end_fill,
+      ),
+      title: Text(
+        AppLocalizations.of(context)!.showMiniPlayerSeekButtons,
+        style: const TextStyle(fontSize: 16),
+      ),
+      subtitle: Text(
+        AppLocalizations.of(context)!.showMiniPlayerSeekButtonsSubtitle,
+        style: TextStyle(
+          fontSize: 13,
+          color: context.isDark
+              ? AppTheme.darkSecondaryText
+              : AppTheme.lightSecondaryText,
+        ),
+      ),
+      trailing: CupertinoSwitch(
+        value: _showMiniPlayerSeekButtons,
+        activeTrackColor: Theme.of(context).colorScheme.primary,
+        onChanged: (value) async {
+          setState(() => _showMiniPlayerSeekButtons = value);
+          await _playerUiSettings.setShowMiniPlayerSeekButtons(value);
         },
       ),
     );

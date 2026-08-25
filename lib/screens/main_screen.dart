@@ -78,7 +78,19 @@ class _MainScreenState extends State<MainScreen> {
       );
 
       playerProvider.setLibraryProvider(libraryProvider);
-      playerProvider.setRecommendationService(recommendationService);
+      
+      // Initialize RecommendationService with user identity
+      if (authProvider.config != null) {
+        recommendationService.initialize(
+          serverUrl: authProvider.config!.serverUrl,
+          username: authProvider.config!.username,
+        ).then((_) {
+           playerProvider.setRecommendationService(recommendationService);
+        });
+      } else {
+        recommendationService.initialize();
+        playerProvider.setRecommendationService(recommendationService);
+      }
 
       playerProvider.onAudioFocusDenied = () {
         if (!mounted) return;

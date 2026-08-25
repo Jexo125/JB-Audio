@@ -626,6 +626,56 @@
     "description": "Show Shuffle button in mini player toggle subtitle"
   },
 
+  "showMiniPlayerSeekButtons": "Show seek buttons",
+  "@showMiniPlayerSeekButtons": {
+    "description": "Label for show mini player seek buttons setting"
+  },
+
+  "showMiniPlayerSeekButtonsSubtitle": "Add fast forward/rewind controls to mini player",
+  "@showMiniPlayerSeekButtonsSubtitle": {
+    "description": "Subtitle for show mini player seek buttons setting"
+  },
+
+  "recommendedForYou": "Recommended for you",
+  "@recommendedForYou": {
+    "description": "Title for recommended section on home screen"
+  },
+
+  "recommendedBecauseYouLike": "Because you like {artist}",
+  "@recommendedBecauseYouLike": {
+    "description": "Reason for recommendation based on artist affinity",
+    "placeholders": {
+      "artist": {
+        "type": "String"
+      }
+    }
+  },
+
+  "recommendedInYourStyle": "In your style: {genre}",
+  "@recommendedInYourStyle": {
+    "description": "Reason for recommendation based on genre affinity",
+    "placeholders": {
+      "genre": {
+        "type": "String"
+      }
+    }
+  },
+
+  "recommendedSimilarTo": "Similar to {artist}",
+  "@recommendedSimilarTo": {
+    "description": "Reason for recommendation based on similar artists",
+    "placeholders": {
+      "artist": {
+        "type": "String"
+      }
+    }
+  },
+
+  "recommendedFrequent": "Often played",
+  "@recommendedFrequent": {
+    "description": "Reason for recommendation based on frequent plays"
+  },
+
   "enableRecommendations": "Enable Recommendations",
   "@enableRecommendations": {
     "description": "Enable Recommendations toggle label"

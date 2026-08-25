@@ -29,6 +29,7 @@ class LibraryProvider extends ChangeNotifier {
   List<String> _genres = [];
   List<Genre> _richGenres = [];
   SearchResult? _starred;
+  List<RecommendedAlbum> _recommendedAlbums = [];
 
   List<Album> _cachedAllAlbums = [];
   List<Song> _cachedAllSongs = [];
@@ -137,6 +138,7 @@ class LibraryProvider extends ChangeNotifier {
   List<String> get genres => _genres;
   List<Genre> get richGenres => _richGenres;
   SearchResult? get starred => _starred;
+  List<RecommendedAlbum> get recommendedAlbums => _recommendedAlbums;
   bool get isLoading => _isLoading;
   bool get isInitialized => _isInitialized;
   String? get error => _error;
@@ -232,6 +234,10 @@ class LibraryProvider extends ChangeNotifier {
       // This allows the UI to show the library without waiting for the server.
       _isInitialized = true;
       _isLoading = false;
+      
+      // Calculate initial recommendations
+      _calculateRecommendations();
+
       notifyListeners();
       
       _audioHandler.notifyAutoChildrenChanged();
@@ -486,6 +492,7 @@ class LibraryProvider extends ChangeNotifier {
       _cachedAllSongs = await _db.getAllSongs();
       _lastCacheUpdate = DateTime.now();
 
+      _calculateRecommendations();
       await _saveCachedData();
       
       _syncProgress = _syncProgress?.copyWith(
@@ -1157,6 +1164,53 @@ class LibraryProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error loading all albums: $e');
       return [];
+    }
+  }
+
+  void _calculateRecommendations() {
+    // 1. Try local personalized recommendations
+    final recommendationService = RecommendationService();
+    if (recommendationService.enabled) {
+      _recommendedAlbums = recommendationService.getRecommendedAlbums(_cachedAllAlbums);
+    }
+
+    // 2. Fallback if insufficient (less than 6 recommendations)
+    if (_recommendedAlbums.length < 6) {
+      final List<RecommendedAlbum> fallbackItems = [];
+      
+      // Try frequent albums as fallback
+      final frequent = _frequentAlbums.take(10).toList();
+      for (final album in frequent) {
+        if (!_recommendedAlbums.any((r) => r.album.id == album.id)) {
+          fallbackItems.add(RecommendedAlbum(
+            album: album, 
+            score: 0.5, 
+            reason: 'frequent',
+          ));
+        }
+      }
+
+      // If still insufficient, add random
+      if (_recommendedAlbums.length + fallbackItems.length < 10) {
+        final random = List<Album>.from(_cachedAllAlbums)..shuffle();
+        for (final album in random.take(10)) {
+          if (!_recommendedAlbums.any((r) => r.album.id == album.id) &&
+              !fallbackItems.any((r) => r.album.id == album.id)) {
+            fallbackItems.add(RecommendedAlbum(
+              album: album,
+              score: 0.1,
+              reason: 'discover',
+            ));
+          }
+        }
+      }
+
+      _recommendedAlbums = [..._recommendedAlbums, ...fallbackItems];
+    }
+    
+    // Limit to 20
+    if (_recommendedAlbums.length > 20) {
+      _recommendedAlbums = _recommendedAlbums.sublist(0, 20);
     }
   }
 

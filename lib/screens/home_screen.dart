@@ -174,7 +174,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (recentAlbums.isNotEmpty || playlists.isNotEmpty) ...[
+                      if (libraryProvider.recommendedAlbums.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        RecommendedCarousel(hPad: hPad),
+                      ] else if (recentAlbums.isNotEmpty || playlists.isNotEmpty) ...[
                         const SizedBox(height: 16),
                         _QuickAccessGrid(
                           albums:

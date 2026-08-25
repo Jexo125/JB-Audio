@@ -45,6 +45,7 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
         maxBufferDuration: const Duration(seconds: 60),
         bufferForPlaybackDuration: const Duration(milliseconds: 1500),
         prioritizeTimeOverSizeThresholds: true,
+        targetBufferBytes: 3 * 1024 * 1024,
       ),
     ),
   );

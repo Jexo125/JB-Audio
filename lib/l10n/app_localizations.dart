@@ -874,6 +874,48 @@ abstract class AppLocalizations {
   /// **'Toggle shuffle from mini player'**
   String get showMiniPlayerShuffleSubtitle;
 
+  /// Label for show mini player seek buttons setting
+  ///
+  /// In en, this message translates to:
+  /// **'Show seek buttons'**
+  String get showMiniPlayerSeekButtons;
+
+  /// Subtitle for show mini player seek buttons setting
+  ///
+  /// In en, this message translates to:
+  /// **'Add fast forward/rewind controls to mini player'**
+  String get showMiniPlayerSeekButtonsSubtitle;
+
+  /// Title for recommended section on home screen
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended for you'**
+  String get recommendedForYou;
+
+  /// Reason for recommendation based on artist affinity
+  ///
+  /// In en, this message translates to:
+  /// **'Because you like {artist}'**
+  String recommendedBecauseYouLike(String artist);
+
+  /// Reason for recommendation based on genre affinity
+  ///
+  /// In en, this message translates to:
+  /// **'In your style: {genre}'**
+  String recommendedInYourStyle(String genre);
+
+  /// Reason for recommendation based on similar artists
+  ///
+  /// In en, this message translates to:
+  /// **'Similar to {artist}'**
+  String recommendedSimilarTo(String artist);
+
+  /// Reason for recommendation based on frequent plays
+  ///
+  /// In en, this message translates to:
+  /// **'Often played'**
+  String get recommendedFrequent;
+
   /// Enable Recommendations toggle label
   ///
   /// In en, this message translates to:

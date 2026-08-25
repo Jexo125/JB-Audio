@@ -7,6 +7,7 @@ class PlayerUiSettingsService {
   static const String _keyShowMiniPlayerHeart = 'mini_player_show_heart';
   static const String _keyShowMiniPlayerRepeat = 'mini_player_show_repeat';
   static const String _keyShowMiniPlayerShuffle = 'mini_player_show_shuffle';
+  static const String _keyShowMiniPlayerSeekButtons = 'mini_player_show_seek_buttons';
   static const String _keyAlbumArtCornerRadius = 'artwork_corner_radius';
   static const String _keyArtworkShape = 'artwork_shape';
   static const String _keyArtworkShadow = 'artwork_shadow';
@@ -24,6 +25,7 @@ class PlayerUiSettingsService {
   final ValueNotifier<bool> showMiniPlayerHeartNotifier = ValueNotifier(false);
   final ValueNotifier<bool> showMiniPlayerRepeatNotifier = ValueNotifier(false);
   final ValueNotifier<bool> showMiniPlayerShuffleNotifier = ValueNotifier(false);
+  final ValueNotifier<bool> showMiniPlayerSeekButtonsNotifier = ValueNotifier(false);
   final ValueNotifier<bool> liveSearchNotifier = ValueNotifier(true);
   final ValueNotifier<double> albumArtCornerRadiusNotifier = ValueNotifier(8.0);
 
@@ -41,6 +43,7 @@ class PlayerUiSettingsService {
     showMiniPlayerHeartNotifier.value = getShowMiniPlayerHeart();
     showMiniPlayerRepeatNotifier.value = getShowMiniPlayerRepeat();
     showMiniPlayerShuffleNotifier.value = getShowMiniPlayerShuffle();
+    showMiniPlayerSeekButtonsNotifier.value = getShowMiniPlayerSeekButtons();
     albumArtCornerRadiusNotifier.value = getAlbumArtCornerRadius();
     artworkShapeNotifier.value = getArtworkShape();
     artworkShadowNotifier.value = getArtworkShadow();
@@ -95,6 +98,16 @@ class PlayerUiSettingsService {
 
   bool getShowMiniPlayerShuffle() {
     return _prefs?.getBool(_keyShowMiniPlayerShuffle) ?? false;
+  }
+
+  Future<void> setShowMiniPlayerSeekButtons(bool show) async {
+    await initialize();
+    await _prefs!.setBool(_keyShowMiniPlayerSeekButtons, show);
+    showMiniPlayerSeekButtonsNotifier.value = show;
+  }
+
+  bool getShowMiniPlayerSeekButtons() {
+    return _prefs?.getBool(_keyShowMiniPlayerSeekButtons) ?? false;
   }
 
   Future<void> setAlbumArtCornerRadius(double radius) async {
@@ -152,6 +165,7 @@ class PlayerUiSettingsService {
     showMiniPlayerHeartNotifier.dispose();
     showMiniPlayerRepeatNotifier.dispose();
     showMiniPlayerShuffleNotifier.dispose();
+    showMiniPlayerSeekButtonsNotifier.dispose();
     liveSearchNotifier.dispose();
     albumArtCornerRadiusNotifier.dispose();
     artworkShapeNotifier.dispose();

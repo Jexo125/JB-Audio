@@ -172,9 +172,9 @@ void main() async {
   offlineService.initialize().catchError((e) {
     debugPrint('Failed to initialize offline service: $e');
   });
-  recommendationService.initialize().catchError((e) {
-    debugPrint('Failed to initialize recommendation service: $e');
-  });
+  
+  // recommendationService.initialize() is now deferred until AuthProvider knows the user
+  
   localMusicService.initialize().catchError((e) {
     debugPrint('Failed to initialize local music service: $e');
   });

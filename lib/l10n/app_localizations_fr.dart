@@ -401,6 +401,35 @@ class AppLocalizationsFr extends AppLocalizations {
       'Activer l\'aléatoire depuis le mini-lecteur';
 
   @override
+  String get showMiniPlayerSeekButtons =>
+      'Afficher les boutons d\'avance/recul';
+
+  @override
+  String get showMiniPlayerSeekButtonsSubtitle =>
+      'Ajouter des contrôles d\'avance rapide au mini-lecteur';
+
+  @override
+  String get recommendedForYou => 'Recommandé pour vous';
+
+  @override
+  String recommendedBecauseYouLike(String artist) {
+    return 'Parce que vous aimez $artist';
+  }
+
+  @override
+  String recommendedInYourStyle(String genre) {
+    return 'Dans votre style : $genre';
+  }
+
+  @override
+  String recommendedSimilarTo(String artist) {
+    return 'Similaire à $artist';
+  }
+
+  @override
+  String get recommendedFrequent => 'Souvent écouté';
+
+  @override
   String get enableRecommendations => 'Activer les recommandations';
 
   @override

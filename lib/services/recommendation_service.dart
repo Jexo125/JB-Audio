@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:crypto/crypto.dart';
 import '../models/models.dart';
 
 abstract class _W {
@@ -37,6 +38,7 @@ class RecommendationService extends ChangeNotifier {
   bool _enabled = true;
 
   SharedPreferences? _prefs;
+  String? _userSuffix;
 
   Map<String, SongProfile> _profiles = {};
   Map<String, double> _artistAffinity = {};
@@ -66,13 +68,66 @@ class RecommendationService extends ChangeNotifier {
   Map<String, SongProfile> get profiles => Map.unmodifiable(_profiles);
   List<String> get recentlyPlayed => List.unmodifiable(_recentlyPlayed);
 
-  Future<void> initialize() async {
+  Future<void> initialize({String? serverUrl, String? username}) async {
     _prefs = await SharedPreferences.getInstance();
+    
+    if (serverUrl != null && username != null) {
+      final key = '${serverUrl}_$username';
+      _userSuffix = md5.convert(utf8.encode(key)).toString();
+      
+      // Check for migration
+      final migrationKey = 'rec_migrated_$_userSuffix';
+      if (!(_prefs!.getBool(migrationKey) ?? false)) {
+        await _migrateGlobalToUser();
+        await _prefs!.setBool(migrationKey, true);
+      }
+    } else {
+      _userSuffix = null;
+    }
+
     _enabled = _prefs!.getBool(_kEnabledKey) ?? true;
     await _loadAllData();
     _applyDecay();
     notifyListeners();
   }
+
+  Future<void> _migrateGlobalToUser() async {
+    if (_userSuffix == null) return;
+    
+    final globalData = _prefs!.getString(_kDataKey);
+    final globalSkips = _prefs!.getString(_kSkipKey);
+    final globalTime = _prefs!.getString(_kTimeKey);
+    final globalDecay = _prefs!.getInt(_kDecayKey);
+
+    if (globalData != null) {
+      final userKey = '${_kDataKey}_$_userSuffix';
+      if (!_prefs!.containsKey(userKey)) {
+        await _prefs!.setString(userKey, globalData);
+      }
+    }
+    if (globalSkips != null) {
+      final userKey = '${_kSkipKey}_$_userSuffix';
+      if (!_prefs!.containsKey(userKey)) {
+        await _prefs!.setString(userKey, globalSkips);
+      }
+    }
+    if (globalTime != null) {
+      final userKey = '${_kTimeKey}_$_userSuffix';
+      if (!_prefs!.containsKey(userKey)) {
+        await _prefs!.setString(userKey, globalTime);
+      }
+    }
+    if (globalDecay != null) {
+      final userKey = '${_kDecayKey}_$_userSuffix';
+      if (!_prefs!.containsKey(userKey)) {
+        await _prefs!.setInt(userKey, globalDecay);
+      }
+    }
+    
+    debugPrint('[Recommendation] Migrated global data to user $_userSuffix');
+  }
+
+  String _getKey(String baseKey) => _userSuffix != null ? '${baseKey}_$_userSuffix' : baseKey;
 
   @override
   void dispose() {
@@ -510,10 +565,10 @@ class RecommendationService extends ChangeNotifier {
 
     final prefs = _prefs ?? await SharedPreferences.getInstance();
     await Future.wait([
-      prefs.remove(_kDataKey),
-      prefs.remove(_kSkipKey),
-      prefs.remove(_kTimeKey),
-      prefs.remove(_kDecayKey),
+      prefs.remove(_getKey(_kDataKey)),
+      prefs.remove(_getKey(_kSkipKey)),
+      prefs.remove(_getKey(_kTimeKey)),
+      prefs.remove(_getKey(_kDecayKey)),
     ]);
 
     notifyListeners();
@@ -631,6 +686,83 @@ class RecommendationService extends ChangeNotifier {
     return 'Night';
   }
 
+  List<RecommendedAlbum> getRecommendedAlbums(List<Album> allAlbums) {
+    if (!_enabled || allAlbums.isEmpty) return [];
+
+    final recommendations = <RecommendedAlbum>[];
+    final recentSet = _recentlyPlayed.take(20).map((id) {
+      // Find album ID for recent songs if possible
+      return _profiles[id]?.albumId;
+    }).whereType<String>().toSet();
+
+    final topArtists = _getTopArtists(10).toSet();
+    final topGenres = _getTopGenres(5).toSet();
+
+    for (final album in allAlbums) {
+      double score = 0.0;
+      String? reason;
+
+      // 1. Artist Affinity (50%)
+      if (album.artist != null && _artistAffinity.containsKey(album.artist)) {
+        final maxA = _maxArtistAffinity ?? 1.0;
+        final artistScore = ((_artistAffinity[album.artist] ?? 0).clamp(0, maxA) / maxA);
+        score += artistScore * 0.5;
+        if (artistScore > 0.7) {
+          reason = 'artist';
+        }
+      }
+
+      // 2. Genre Affinity (30%)
+      if (album.genre != null && _genreAffinity.containsKey(album.genre)) {
+        final maxG = _maxGenreAffinity ?? 1.0;
+        final genreScore = ((_genreAffinity[album.genre] ?? 0).clamp(0, maxG) / maxG);
+        score += genreScore * 0.3;
+        if (reason == null && genreScore > 0.7) {
+          reason = 'genre';
+        }
+      }
+
+      // 3. Starred / Favorite Bonus (20%)
+      // Note: Album model doesn't have starred property, check via service or specific songs if needed
+      // For now, check if artist is in top 5 as a proxy for 'favorite'
+      if (album.artist != null && _getTopArtists(5).contains(album.artist)) {
+        score += 0.2;
+      }
+
+      // 4. Recency Penalty
+      if (recentSet.contains(album.id)) {
+        score -= 0.4;
+      }
+
+      if (score > 0.1) {
+        recommendations.add(RecommendedAlbum(
+          album: album,
+          score: score.clamp(0.0, 1.0),
+          reason: reason,
+        ));
+      }
+    }
+
+    // Sort by score and limit
+    recommendations.sort((a, b) => b.score.compareTo(a.score));
+
+    // Diversify artists: allow max 2 albums per artist
+    final diversified = <RecommendedAlbum>[];
+    final artistCount = <String, int>{};
+
+    for (final rec in recommendations) {
+      final artist = rec.album.artist ?? 'Unknown';
+      final count = artistCount[artist] ?? 0;
+      if (count < 2) {
+        diversified.add(rec);
+        artistCount[artist] = count + 1;
+      }
+      if (diversified.length >= 20) break;
+    }
+
+    return diversified;
+  }
+
   void _scheduleSave() {
     _saveTimer?.cancel();
     _saveTimer = Timer(
@@ -642,7 +774,7 @@ class RecommendationService extends ChangeNotifier {
   Future<void> _loadAllData() async {
     final prefs = _prefs!;
 
-    final dataJson = prefs.getString(_kDataKey);
+    final dataJson = prefs.getString(_getKey(_kDataKey));
     if (dataJson != null) {
       try {
         final Map<String, dynamic> d = json.decode(dataJson);
@@ -661,7 +793,7 @@ class RecommendationService extends ChangeNotifier {
       }
     }
 
-    final skipJson = prefs.getString(_kSkipKey);
+    final skipJson = prefs.getString(_getKey(_kSkipKey));
     if (skipJson != null) {
       try {
         _skipCounts = Map<String, int>.from(json.decode(skipJson));
@@ -670,7 +802,7 @@ class RecommendationService extends ChangeNotifier {
       }
     }
 
-    final timeJson = prefs.getString(_kTimeKey);
+    final timeJson = prefs.getString(_getKey(_kTimeKey));
     if (timeJson != null) {
       try {
         final Map<String, dynamic> t = json.decode(timeJson);
@@ -682,7 +814,7 @@ class RecommendationService extends ChangeNotifier {
       }
     }
 
-    final decayTs = prefs.getInt(_kDecayKey);
+    final decayTs = prefs.getInt(_getKey(_kDecayKey));
     if (decayTs != null) {
       _lastDecayApplied = DateTime.fromMillisecondsSinceEpoch(decayTs);
     }
@@ -706,13 +838,13 @@ class RecommendationService extends ChangeNotifier {
       };
 
       await Future.wait([
-        prefs.setString(_kDataKey, json.encode(data)),
-        prefs.setString(_kSkipKey, json.encode(_skipCounts)),
+        prefs.setString(_getKey(_kDataKey), json.encode(data)),
+        prefs.setString(_getKey(_kSkipKey), json.encode(_skipCounts)),
         prefs.setString(
-          _kTimeKey,
+          _getKey(_kTimeKey),
           json.encode(_timePatterns.map((k, v) => MapEntry(k.toString(), v))),
         ),
-        prefs.setInt(_kDecayKey, _lastDecayApplied.millisecondsSinceEpoch),
+        prefs.setInt(_getKey(_kDecayKey), _lastDecayApplied.millisecondsSinceEpoch),
       ]);
     } catch (e) {
       debugPrint('RecommendationService: error saving data: $e');

@@ -309,97 +309,138 @@ class _MiniPlayerControls extends StatelessWidget {
                 return ValueListenableBuilder<bool>(
                   valueListenable: playerUiSettings.showMiniPlayerShuffleNotifier,
                   builder: (context, showShuffle, _) {
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (showHeart && !isRadio)
-                          Selector<PlayerProvider, Song?>(
-                            selector: (_, p) => p.currentSong,
-                            builder: (context, currentSong, _) {
-                              final isStarred = currentSong?.starred == true;
-                              return IconButton(
-                                onPressed: currentSong != null
-                                    ? () => context
-                                        .read<LibraryProvider>()
-                                        .toggleFavoriteForSong(currentSong)
-                                    : null,
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(
-                                  minWidth: 36,
-                                  minHeight: 36,
-                                ),
-                                icon: Icon(
-                                  isStarred
-                                      ? Icons.favorite_rounded
-                                      : Icons.favorite_border_rounded,
-                                  size: ScreenHelper.miniPlayerIconSize(
-                                    context,
-                                  ),
-                                ),
-                                color:
-                                    isStarred ? AppTheme.appleMusicRed : color,
-                              );
-                            },
-                          ),
+                    return ValueListenableBuilder<bool>(
+                      valueListenable: playerUiSettings.showMiniPlayerSeekButtonsNotifier,
+                      builder: (context, showSeek, _) {
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (showHeart && !isRadio)
+                              Selector<PlayerProvider, Song?>(
+                                selector: (_, p) => p.currentSong,
+                                builder: (context, currentSong, _) {
+                                  final isStarred = currentSong?.starred == true;
+                                  return IconButton(
+                                    onPressed: currentSong != null
+                                        ? () => context
+                                            .read<LibraryProvider>()
+                                            .toggleFavoriteForSong(currentSong)
+                                        : null,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(
+                                      minWidth: 36,
+                                      minHeight: 36,
+                                    ),
+                                    icon: Icon(
+                                      isStarred
+                                          ? Icons.favorite_rounded
+                                          : Icons.favorite_border_rounded,
+                                      size: ScreenHelper.miniPlayerIconSize(
+                                        context,
+                                      ),
+                                    ),
+                                    color:
+                                        isStarred ? AppTheme.appleMusicRed : color,
+                                  );
+                                },
+                              ),
 
-                        if (showShuffle && !isRadio)
-                          Selector<PlayerProvider, bool>(
-                            selector: (_, p) => p.shuffleEnabled,
-                            builder: (context, shuffleEnabled, _) {
-                              return IconButton(
-                                onPressed: provider.toggleShuffle,
+                            if (showShuffle && !isRadio)
+                              Selector<PlayerProvider, bool>(
+                                selector: (_, p) => p.shuffleEnabled,
+                                builder: (context, shuffleEnabled, _) {
+                                  return IconButton(
+                                    onPressed: provider.toggleShuffle,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                                    icon: Icon(
+                                      CupertinoIcons.shuffle,
+                                      size: ScreenHelper.miniPlayerIconSize(context),
+                                    ),
+                                    color: shuffleEnabled ? Theme.of(context).colorScheme.primary : color,
+                                  );
+                                },
+                              ),
+
+                            if (showSeek && !isRadio)
+                              GestureDetector(
+                                onLongPressStart: (_) => provider.startFastRewind(),
+                                onLongPressEnd: (_) => provider.stopSeek(),
+                                child: IconButton(
+                                  onPressed: () {
+                                    final jump = const Duration(seconds: 10);
+                                    Duration target = provider.position - jump;
+                                    if (target < Duration.zero) target = Duration.zero;
+                                    provider.seek(target);
+                                  },
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                                  icon: Icon(Icons.fast_rewind_rounded, size: ScreenHelper.miniPlayerIconSize(context)),
+                                  color: color,
+                                ),
+                              ),
+
+                            IconButton(
+                              onPressed: provider.togglePlayPause,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                              icon: Icon(
+                                isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                size: ScreenHelper.miniPlayerPlayIconSize(context),
+                              ),
+                              color: color,
+                            ),
+
+                            if (showSeek && !isRadio)
+                              GestureDetector(
+                                onLongPressStart: (_) => provider.startFastForward(),
+                                onLongPressEnd: (_) => provider.stopSeek(),
+                                child: IconButton(
+                                  onPressed: () {
+                                    final jump = const Duration(seconds: 10);
+                                    Duration target = provider.position + jump;
+                                    if (target > provider.duration) target = provider.duration;
+                                    provider.seek(target);
+                                  },
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                                  icon: Icon(Icons.fast_forward_rounded, size: ScreenHelper.miniPlayerIconSize(context)),
+                                  color: color,
+                                ),
+                              ),
+
+                            if (showRepeat && !isRadio)
+                              Selector<PlayerProvider, RepeatMode>(
+                                selector: (_, p) => p.repeatMode,
+                                builder: (context, repeatMode, _) {
+                                  IconData icon;
+                                  bool active = repeatMode != RepeatMode.off;
+                                  if (repeatMode == RepeatMode.one) {
+                                    icon = CupertinoIcons.repeat_1;
+                                  } else {
+                                    icon = CupertinoIcons.repeat;
+                                  }
+                                  return IconButton(
+                                    onPressed: provider.toggleRepeat,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                                    icon: Icon(icon, size: ScreenHelper.miniPlayerIconSize(context)),
+                                    color: active ? Theme.of(context).colorScheme.primary : color,
+                                  );
+                                },
+                              ),
+
+                            if (!isRadio)
+                              IconButton(
+                                onPressed: hasNext ? provider.skipNext : null,
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                                icon: Icon(
-                                  CupertinoIcons.shuffle,
-                                  size: ScreenHelper.miniPlayerIconSize(context),
-                                ),
-                                color: shuffleEnabled ? Theme.of(context).colorScheme.primary : color,
-                              );
-                            },
-                          ),
-
-                        IconButton(
-                          onPressed: provider.togglePlayPause,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                          icon: Icon(
-                            isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                            size: ScreenHelper.miniPlayerPlayIconSize(context),
-                          ),
-                          color: color,
-                        ),
-
-                        if (showRepeat && !isRadio)
-                          Selector<PlayerProvider, RepeatMode>(
-                            selector: (_, p) => p.repeatMode,
-                            builder: (context, repeatMode, _) {
-                              IconData icon;
-                              bool active = repeatMode != RepeatMode.off;
-                              if (repeatMode == RepeatMode.one) {
-                                icon = CupertinoIcons.repeat_1;
-                              } else {
-                                icon = CupertinoIcons.repeat;
-                              }
-                              return IconButton(
-                                onPressed: provider.toggleRepeat,
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                                icon: Icon(icon, size: ScreenHelper.miniPlayerIconSize(context)),
-                                color: active ? Theme.of(context).colorScheme.primary : color,
-                              );
-                            },
-                          ),
-
-                        if (!isRadio)
-                          IconButton(
-                            onPressed: hasNext ? provider.skipNext : null,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                            icon: Icon(Icons.skip_next_rounded, size: ScreenHelper.miniPlayerSkipIconSize(context)),
-                            color: color,
-                          ),
-                      ],
+                                icon: Icon(Icons.skip_next_rounded, size: ScreenHelper.miniPlayerSkipIconSize(context)),
+                                color: color,
+                              ),
+                          ],
+                        );
+                      },
                     );
                   },
                 );
