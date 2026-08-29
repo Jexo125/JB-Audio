@@ -1218,6 +1218,8 @@ class LibraryProvider extends ChangeNotifier {
     if (_recommendedAlbums.length > 20) {
       _recommendedAlbums = _recommendedAlbums.sublist(0, 20);
     }
+    
+    notifyListeners();
   }
 
   @override

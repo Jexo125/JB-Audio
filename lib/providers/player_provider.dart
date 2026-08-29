@@ -35,6 +35,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   RecommendationService? _recommendationService;
   bool _currentSongValidated = false;
   bool _currentSongTracked = false;
+  bool _currentSongCompletedTracked = false;
   VoidCallback? onAudioFocusDenied;
 
   List<Song> _queue = [];
@@ -806,6 +807,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
             // Reset flags for new song
             _currentSongValidated = false;
             _currentSongTracked = false;
+            _currentSongCompletedTracked = false;
 
             _refreshArtworkUrl();
             notifyListeners();
@@ -871,6 +873,12 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       _position = Duration.zero;
       _duration = Duration(seconds: _currentSong?.duration ?? 0);
       _resolvedArtworkUrl = null;
+
+      // Reset flags for new song
+      _currentSongValidated = false;
+      _currentSongTracked = false;
+      _currentSongCompletedTracked = false;
+
       notifyListeners();
       _refreshArtworkUrl();
 
@@ -1078,6 +1086,12 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _position = Duration.zero;
     _duration = Duration(seconds: _currentSong?.duration ?? 0);
     _resolvedArtworkUrl = null;
+
+    // Reset flags for new song
+    _currentSongValidated = false;
+    _currentSongTracked = false;
+    _currentSongCompletedTracked = false;
+
     notifyListeners();
     _refreshArtworkUrl();
 
@@ -1267,6 +1281,12 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
         duration: 0,
       );
       _resolvedArtworkUrl = null;
+
+      // Reset flags for radio (though scoring is different)
+      _currentSongValidated = false;
+      _currentSongTracked = false;
+      _currentSongCompletedTracked = false;
+
       notifyListeners();
 
       await _audioPlayer.setUrl(station.streamUrl);
@@ -1293,17 +1313,28 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     final service = _recommendationService;
     
     if (song == null || service == null || !service.enabled) return;
-    if (_currentSongTracked) return;
 
-    if (_currentSongValidated || completed) {
+    if (completed) {
+      if (_currentSongCompletedTracked) return;
+      
+      if (_currentSongTracked) {
+        service.trackSongCompletion(song);
+      } else {
+        service.trackSongPlay(song, completed: true);
+      }
+      _currentSongTracked = true;
+      _currentSongCompletedTracked = true;
+    } else if (isSkip) {
+      if (_currentSongTracked) return;
+      service.trackSkip(song, secondsPlayed: _position.inSeconds);
+      _currentSongTracked = true;
+    } else if (_currentSongValidated) {
+      if (_currentSongTracked) return;
       service.trackSongPlay(
         song,
         durationPlayed: _position.inSeconds,
-        completed: completed,
+        completed: false,
       );
-      _currentSongTracked = true;
-    } else if (isSkip) {
-      service.trackSkip(song, secondsPlayed: _position.inSeconds);
       _currentSongTracked = true;
     }
   }

@@ -288,10 +288,12 @@ class TranscodingService extends ChangeNotifier {
 
     if (transcodeParams != null) {
       params['transcodeParams'] = transcodeParams;
-    } else {
-      if (bitrate != null) params['maxBitRate'] = bitrate.toString();
-      if (format != null) params['format'] = format;
     }
+    
+    // Always include bitrate and format to ensure Navidrome applies 
+    // the correct Player Profile and fallback transcoding if needed.
+    if (bitrate != null) params['maxBitRate'] = bitrate.toString();
+    if (format != null) params['format'] = format;
 
     return Uri.parse('$serverUrl/rest/stream.view')
         .replace(queryParameters: params);

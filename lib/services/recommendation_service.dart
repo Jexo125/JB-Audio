@@ -210,6 +210,45 @@ class RecommendationService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Updates the status of the most recently tracked play to 'completed'.
+  /// Used to apply the completion bonus after the initial 30s validation.
+  Future<void> trackSongCompletion(Song song) async {
+    final id = song.id;
+    final profile = _profiles[id];
+    if (profile == null) return;
+
+    // Safety: only update if it was the last song started and not already completed
+    if (_recentlyPlayed.isEmpty || _recentlyPlayed.first != id) return;
+    
+    // Check if we already registered this as completed to avoid double counting
+    // completionRate is calculated as completedPlays / playCount.
+    // If we just added a play (playCount++) and completedPlays hasn't caught up:
+    if (profile.completedPlays < profile.playCount) {
+      profile.completedPlays++;
+      
+      if (_enabled) {
+        // Apply the difference between a partial listen and a completed listen
+        // Max weight is 1.5, partial (ratio > 0.8) is 1.3. 
+        // We add a bonus to reflect this completion in affinities.
+        const completionBonus = 0.5;
+
+        if (song.artist != null) {
+          _artistAffinity[song.artist!] =
+              (_artistAffinity[song.artist!] ?? 0) + completionBonus;
+          _maxArtistAffinity = null;
+        }
+        if (song.genre != null) {
+          _genreAffinity[song.genre!] =
+              (_genreAffinity[song.genre!] ?? 0) + completionBonus * 0.75;
+          _maxGenreAffinity = null;
+        }
+      }
+      
+      _scheduleSave();
+      notifyListeners();
+    }
+  }
+
   Future<void> trackSkip(Song song, {int secondsPlayed = 0}) async {
     final id = song.id;
     _skipCounts[id] = (_skipCounts[id] ?? 0) + 1;

@@ -54,6 +54,18 @@ Lors du premier lancement ou après un vidage du cache, un nouvel écran dédié
 
 ---
 
+## 🚀 Nouveautés de la Version 2.0.6 (Corrective)
+
+### 🛠️ Corrections et Stabilité
+- **Lecture Audio** : Correction du blocage systématique à quelques secondes de la fin des morceaux.
+- **Buffering** : Rétablissement d'une marge de sécurité plus stable (30s min / 60s max) pour garantir la complétion des flux transcodés.
+- **Transcodage** : Correction de la limitation de débit. Les paramètres `maxBitRate` et `format` sont désormais transmis correctement, garantissant le respect de la qualité choisie sur les serveurs Subsonic/Navidrome.
+- **Recommandations** : Correction du moteur de tracking. Les écoutes successives sont désormais comptabilisées correctement sans nécessiter de redémarrage.
+- **Scoring** : Amélioration du suivi de complétion des morceaux (bonus de fin) sans risque de double comptage des écoutes.
+- **Interface** : Actualisation en temps réel des statistiques d'écoute dans les paramètres et du carrousel de recommandations sur l'Accueil.
+
+---
+
 ## 🚀 Nouveautés de la Version 2.0.5
 
 ### 🧠 Système de Recommandations Personnalisées
