@@ -12,6 +12,7 @@ import '../models/sync_progress.dart';
 class LibraryProvider extends ChangeNotifier {
   final SubsonicService _subsonicService;
   final MuslyAudioHandler _audioHandler;
+  final RecommendationService? _recommendationService;
 
   bool _localOnlyMode = false;
   bool _serverOfflineMode = false;
@@ -49,7 +50,7 @@ class LibraryProvider extends ChangeNotifier {
   static const String _artistsCacheKey = 'cached_artists';
   static const String _lastUpdateKey = 'last_cache_update';
 
-  LibraryProvider(this._subsonicService, this._audioHandler) {
+  LibraryProvider(this._subsonicService, this._audioHandler, [this._recommendationService]) {
     // Serve the Android Auto browse tree: audio_service pulls these lists on
     // demand, including from the headless engine when the car connects while
     // the app UI has never been opened.
@@ -57,6 +58,8 @@ class LibraryProvider extends ChangeNotifier {
     _audioHandler.onGetLibraryAlbums = _albumsForAuto;
     _audioHandler.onGetLibraryArtists = _artistsForAuto;
     _audioHandler.onGetLibraryPlaylists = _playlistsForAuto;
+
+    _recommendationService?.addListener(_calculateRecommendations);
   }
   SubsonicService get subsonicService => _subsonicService;
 
@@ -1084,9 +1087,11 @@ class LibraryProvider extends ChangeNotifier {
       if (isStarred) {
         await unstar(songId: song.id);
         song.starred = false;
+        _recommendationService?.trackStarred(song, false);
       } else {
         await star(songId: song.id);
         song.starred = true;
+        _recommendationService?.trackStarred(song, true);
       }
       notifyListeners();
     } catch (e) {
@@ -1168,10 +1173,11 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   void _calculateRecommendations() {
+    if (_recommendationService == null) return;
+
     // 1. Try local personalized recommendations
-    final recommendationService = RecommendationService();
-    if (recommendationService.enabled) {
-      _recommendedAlbums = recommendationService.getRecommendedAlbums(_cachedAllAlbums);
+    if (_recommendationService!.enabled) {
+      _recommendedAlbums = _recommendationService!.getRecommendedAlbums(_cachedAllAlbums);
     }
 
     // 2. Fallback if insufficient (less than 6 recommendations)
@@ -1216,6 +1222,7 @@ class LibraryProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _recommendationService?.removeListener(_calculateRecommendations);
     _localMusicService?.removeListener(_onLocalMusicServiceChanged);
     super.dispose();
   }

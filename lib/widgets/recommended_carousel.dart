@@ -85,10 +85,6 @@ class _RecommendedCard extends StatelessWidget {
         return l10n.recommendedBecauseYouLike(album.artist ?? '');
       case 'genre':
         return l10n.recommendedInYourStyle(album.genre ?? '');
-      case 'frequent':
-        return l10n.recommendedFrequent;
-      case 'discover':
-        return l10n.recommendedSimilarTo(album.artist ?? '');
       default:
         return null;
     }

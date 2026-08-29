@@ -430,7 +430,12 @@ class _SearchScreenState extends State<SearchScreen> {
             itemCount: categories.length,
             itemBuilder: (context, index) {
               final category = categories[index];
-              return _CategoryCard(category: category);
+              return CategoryCard(
+                title: category.title,
+                icon: category.icon,
+                colors: category.colors,
+                onTap: category.onTap,
+              );
             },
           ),
         ),
@@ -630,49 +635,3 @@ class _CategoryItem {
   _CategoryItem(this.title, this.icon, this.colors, this.onTap);
 }
 
-class _CategoryCard extends StatelessWidget {
-  final _CategoryItem category;
-
-  const _CategoryCard({required this.category});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: category.colors,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: category.onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(category.icon, color: Colors.white, size: 24),
-                const Spacer(),
-                Text(
-                  category.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

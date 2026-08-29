@@ -41,8 +41,8 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
     handleInterruptions: !_ownsFocusNatively,
     audioLoadConfiguration: AudioLoadConfiguration(
       androidLoadControl: AndroidLoadControl(
-        minBufferDuration: const Duration(seconds: 30),
-        maxBufferDuration: const Duration(seconds: 60),
+        minBufferDuration: const Duration(seconds: 15),
+        maxBufferDuration: const Duration(seconds: 30),
         bufferForPlaybackDuration: const Duration(milliseconds: 1500),
         prioritizeTimeOverSizeThresholds: true,
         targetBufferBytes: 3 * 1024 * 1024,

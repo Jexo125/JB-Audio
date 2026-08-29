@@ -33,6 +33,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   late final UpnpService _upnpService;
 
   RecommendationService? _recommendationService;
+  bool _currentSongValidated = false;
+  bool _currentSongTracked = false;
   VoidCallback? onAudioFocusDenied;
 
   List<Song> _queue = [];
@@ -752,6 +754,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           if (_sleepTimerEndCurrentSong) {
             _doSleepTimerStop();
           } else {
+            _recordRecommendationSignal(completed: true);
             _handleSongCompletion();
           }
         }
@@ -765,6 +768,16 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
           }
           _position = pos;
           _positionController.add(pos);
+
+          // Recommendation tracking: validate listen at 30s or 50%
+          if (!_currentSongTracked && _currentSong != null) {
+            final dur = _duration.inSeconds;
+            if (pos.inSeconds >= 30 || (dur > 0 && pos.inSeconds >= dur / 2)) {
+              _currentSongValidated = true;
+              _recordRecommendationSignal();
+            }
+          }
+
           notifyListeners();
           
           // Debounce queue state saving - only save every few seconds or when paused
@@ -783,9 +796,17 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       _currentIndexSub = _audioPlayer.currentIndexStream.listen((index) {
         if (index != null && index != _currentIndex && _queue.isNotEmpty) {
           if (index < _queue.length) {
+            // Signal skip if previous song wasn't validated
+            _recordRecommendationSignal(isSkip: true);
+
             _currentIndex = index;
             _currentSong = _queue[index];
             _duration = Duration(seconds: _currentSong?.duration ?? 0);
+            
+            // Reset flags for new song
+            _currentSongValidated = false;
+            _currentSongTracked = false;
+
             _refreshArtworkUrl();
             notifyListeners();
             _updateAndroidAuto();
@@ -833,6 +854,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> playSong(Song song, {List<Song>? playlist, int startIndex = 0}) async {
     stopSeek();
     try {
+      _recordRecommendationSignal(isSkip: true);
+
       _isPlayingRadio = false;
       _currentRadioStation = null;
 
@@ -989,6 +1012,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> stop() async {
     stopSeek();
+    _recordRecommendationSignal();
     if (_isRenderingRemotely) {
       await _stopRemotely();
     }
@@ -1261,6 +1285,26 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       _storageService.recordPlay(song.id);
     } catch (e) {
       debugPrint('Error recording playback history: $e');
+    }
+  }
+
+  void _recordRecommendationSignal({bool isSkip = false, bool completed = false}) {
+    final song = _currentSong;
+    final service = _recommendationService;
+    
+    if (song == null || service == null || !service.enabled) return;
+    if (_currentSongTracked) return;
+
+    if (_currentSongValidated || completed) {
+      service.trackSongPlay(
+        song,
+        durationPlayed: _position.inSeconds,
+        completed: completed,
+      );
+      _currentSongTracked = true;
+    } else if (isSkip) {
+      service.trackSkip(song, secondsPlayed: _position.inSeconds);
+      _currentSongTracked = true;
     }
   }
 

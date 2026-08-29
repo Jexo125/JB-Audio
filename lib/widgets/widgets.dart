@@ -16,3 +16,4 @@ export 'right_sidebar.dart';
 export 'quick_access_grid.dart';
 export 'gradient_header.dart';
 export 'recommended_carousel.dart';
+export 'category_card.dart';

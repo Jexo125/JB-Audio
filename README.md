@@ -21,7 +21,7 @@ JB Audio 2.0 intègre pleinement la négociation de transcodage pour une gestion
 Une intégration parfaite avec votre serveur Navidrome :
 - **Signalement en temps réel** : Vos morceaux apparaissent immédiatement dans l'interface "Now Playing" de Navidrome.
 - **Scrobbling Natif** : Signalement précis de la lecture via `scrobble.view?submission=false`.
-- **Identification** : L'application s'identifie désormais comme `JB Audio/2.0.2` auprès du serveur.
+- **Identification** : L'application s'identifie désormais comme `JB Audio` auprès du serveur.
 
 ---
 
@@ -50,9 +50,28 @@ Lors du premier lancement ou après un vidage du cache, un nouvel écran dédié
 - **Durée de confort** de 4 secondes minimum pour garantir la compréhension des opérations en cours, même sur les serveurs ultra-rapides.
 
 ### Stabilité Réseau
-- **Buffering Amélioré** : Nouvelle stratégie de "Range-buffering" (30s min / 60s max) pour stabiliser la lecture sur les réseaux mobiles instables et limiter les micro-coupures TCP.
+- **Buffering Amélioré** : Nouvelle stratégie de "Range-buffering" (15s min / 30s max) pour stabiliser la lecture sur les réseaux mobiles instables et limiter les micro-coupures TCP tout en économisant les données.
 
 ---
+
+## 🚀 Nouveautés de la Version 2.0.5
+
+### 🧠 Système de Recommandations Personnalisées
+Rétablissement complet du moteur de recommandations :
+- **Intelligence Contextuelle** : Le système apprend de vos habitudes selon la règle "30 secondes ou 50%" d'écoute validée.
+- **Scoring Avancé** : Prise en compte immédiate des favoris (+20% d'affinité) et des morceaux passés (skips).
+- **Isolation Totale** : Vos données d'écoute sont isolées par utilisateur et par serveur (stockage local sécurisé).
+- **Mise à jour en temps réel** : Les recommandations s'adaptent instantanément pendant votre session d'écoute.
+
+### 🎨 Refonte de l'interface d'Accueil
+- **Nouvelle hiérarchie** : "Lus récemment" et "Recommandé pour vous" sont désormais prioritaires en haut de l'écran.
+- **Carrousels Horizontaux** : Toutes les sections utilisent désormais un défilement horizontal fluide et homogène.
+- **Clarté Visuelle** : Suppression des sections redondantes ("Pour vous") et nettoyage des indications de recommandation imprécises.
+
+### 📚 Bibliothèque & Navigation
+- **Interface Épurée** : Suppression de la liste automatique "Favoris + Récents" pour une navigation plus claire.
+- **Harmonisation UX** : Les boutons de navigation de la Bibliothèque utilisent désormais le même design moderne (Gradients + Icônes) et la même grille responsive que l'écran de Recherche.
+- **Cohérence Design** : Composants partagés pour une expérience fluide entre la navigation et la découverte.
 
 ## 🔎 Recherche
 
@@ -65,7 +84,7 @@ JB Audio conserve sa fonction de **Recherche Utilisateur** spécifique et améli
 
 ## ✨ Fonctionnalités Standards
 
-- ❤️ Gestion complète des favoris (Starred)
+- ❤️ Gestion complète des favoris
 - 📋 Création et édition de playlists
 - 🎼 Affichage des paroles synchronisées (Navidrome + LRCLIB fallback)
 - 📻 Stations radio internet via le serveur

@@ -230,7 +230,11 @@ void main() async {
     jukeboxService,
     transcodingService,
   );
-  final libraryProvider = LibraryProvider(subsonicService, audioHandler);
+  final libraryProvider = LibraryProvider(
+    subsonicService,
+    audioHandler,
+    recommendationService,
+  );
   playerProvider.setLibraryProvider(libraryProvider);
 
   final Widget appWithProviders = MultiProvider(

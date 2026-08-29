@@ -8,6 +8,7 @@ import '../providers/providers.dart';
 import '../services/subsonic_service.dart';
 import '../services/local_music_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/widgets.dart';
 import '../utils/navigation_helper.dart';
 import 'album_screen.dart';
 import 'package:jbaudio/screens/playlist_screen.dart';
@@ -21,7 +22,6 @@ import 'all_songs_screen.dart';
 import 'downloads_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../services/offline_service.dart';
-import '../widgets/album_artwork.dart';
 import '../utils/genre_translator.dart';
 
 class LibraryScreen extends StatefulWidget {
@@ -220,51 +220,50 @@ class _LibraryScreenState extends State<LibraryScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               sliver: SliverGrid(
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 220,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  childAspectRatio: 2.5,
+                  maxCrossAxisExtent: 200,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 1.6,
                 ),
                 delegate: SliverChildListDelegate([
-                  _LibraryGridCard(
+                  CategoryCard(
                     icon: CupertinoIcons.list_bullet,
-                    iconColor: const Color(0xFF3B82F6),
+                    colors: [Colors.blue, Colors.indigo],
                     title: l10n.playlists,
                     subtitle: l10n.yourPlaylists,
                     onTap: () => _navigate(context, const PlaylistsScreen()),
                   ),
-                  _LibraryGridCard(
+                  CategoryCard(
                     icon: CupertinoIcons.heart_fill,
-                    iconColor: const Color(0xFF8B5CF6),
+                    colors: [Colors.red, Colors.pink],
                     title: l10n.likedSongs,
                     subtitle: l10n.playlist,
-                    isGradient: true,
                     onTap: () => _navigate(context, const FavoritesScreen()),
                   ),
-                  _LibraryGridCard(
+                  CategoryCard(
                     icon: CupertinoIcons.music_note_list,
-                    iconColor: const Color(0xFF34C759),
+                    colors: [Colors.green, Colors.teal],
                     title: l10n.songs,
                     subtitle: l10n.songs,
                     onTap: () => _navigate(context, const AllSongsScreen()),
                   ),
-                  _LibraryGridCard(
+                  CategoryCard(
                     icon: CupertinoIcons.star_fill,
-                    iconColor: const Color(0xFFFF9500),
+                    colors: [Colors.orange, Colors.deepOrange],
                     title: l10n.likedAlbums,
                     subtitle: l10n.albums,
                     onTap: () => _navigate(context, const LikedAlbumsScreen()),
                   ),
-                  _LibraryGridCard(
+                  CategoryCard(
                     icon: CupertinoIcons.antenna_radiowaves_left_right,
-                    iconColor: const Color(0xFF34C759),
+                    colors: [Colors.indigo, Colors.blue],
                     title: l10n.radioStations,
                     subtitle: l10n.internetRadio,
                     onTap: () => _navigate(context, const RadioScreen()),
                   ),
-                  _LibraryGridCard(
+                  CategoryCard(
                     icon: CupertinoIcons.arrow_down_circle_fill,
-                    iconColor: const Color(0xFF00C7BE),
+                    colors: [Colors.teal, Colors.cyan],
                     title: 'Téléchargements',
                     subtitle: 'Titres hors-ligne',
                     onTap: () => _navigate(context, const DownloadsScreen()),
@@ -277,6 +276,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
               final items = _getFilteredItems(context, libraryProvider);
 
               if (items.isEmpty) {
+                if (_selectedFilter == 'Faves') {
+                  return const SliverToBoxAdapter(child: SizedBox.shrink());
+                }
                 return SliverFillRemaining(
                   hasScrollBody: false,
                   child: _LibraryEmptyState(
@@ -317,34 +319,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
     List<_LibraryItem> items = [];
 
     if (_selectedFilter == 'Faves') {
-      items.addAll(
-        provider.playlists.map(
-              (p) => _LibraryItem(
-            type: 'Playlist',
-            id: p.id,
-            name: p.name,
-            subtitle: l10n.songsCount(p.songCount ?? 0),
-            coverArt: p.coverArt,
-          ),
-        ),
-      );
-      final recent = provider.isLocalOnlyMode
-          ? provider.cachedAllAlbums.take(10).toList()
-          : provider.recentAlbums.take(10).toList();
-      items.addAll(
-        recent.map(
-              (a) => _LibraryItem(
-            type: 'Album',
-            id: a.id,
-            name: a.name,
-            subtitle:
-            a.artistParticipants != null && a.artistParticipants!.isNotEmpty
-                ? a.artistParticipants!.map((r) => r.name).join(', ')
-                : (a.artist ?? ''),
-            coverArt: a.coverArt,
-          ),
-        ),
-      );
       return items;
     }
 
@@ -963,95 +937,3 @@ class _LibraryItem {
   });
 }
 
-class _LibraryGridCard extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String subtitle;
-  final bool isGradient;
-  final VoidCallback? onTap;
-
-  const _LibraryGridCard({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.subtitle,
-    this.isGradient = false,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                    gradient: isGradient
-                        ? LinearGradient(
-                            colors: [iconColor.withValues(alpha: 0.8), iconColor],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          )
-                        : null,
-                    color: isGradient ? null : iconColor.withValues(alpha: 0.15),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: isGradient ? Colors.white : iconColor,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          color: isDark ? Colors.white60 : Colors.black54,
-                          fontSize: 11,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

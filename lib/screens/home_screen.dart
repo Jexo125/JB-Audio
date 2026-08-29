@@ -174,19 +174,28 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (libraryProvider.recommendedAlbums.isNotEmpty) ...[
+                      if (libraryProvider.recentAlbums.isNotEmpty) ...[
                         const SizedBox(height: 16),
-                        RecommendedCarousel(hPad: hPad),
-                      ] else if (recentAlbums.isNotEmpty || playlists.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        _QuickAccessGrid(
-                          albums:
-                              recentAlbums.take(isDesktop ? 6 : 4).toList(),
-                          playlists:
-                              playlists.take(isDesktop ? 3 : 2).toList(),
-                          isDesktop: isDesktop,
-                          hPad: hPad,
+                        HorizontalScrollSection(
+                          title: AppLocalizations.of(context)!.recentlyPlayed,
+                          padding: EdgeInsets.symmetric(horizontal: hPad),
+                          cardSize: isDesktop ? 180 : 150,
+                          children: libraryProvider.recentAlbums
+                              .take(10)
+                              .map(
+                                (album) => AlbumCard(
+                                  album: album,
+                                  size: isDesktop ? 180 : 150,
+                                  onTap: () => _openAlbum(context, album.id),
+                                ),
+                              )
+                              .toList(),
                         ),
+                      ],
+
+                      if (libraryProvider.recommendedAlbums.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        RecommendedCarousel(hPad: hPad),
                       ],
 
                       const SizedBox(height: 24),
@@ -194,17 +203,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Favorite Playlists Section
                       const FavoritePlaylistsSection(),
                       const SizedBox(height: 24),
-
-                      if (recommendationService.enabled &&
-                          personalizedFeed.isNotEmpty)
-                        _buildMixSection(
-                          context: context,
-                          title: AppLocalizations.of(context)!.forYou,
-                          icon: Icons.stars_rounded,
-                          songs: personalizedFeed,
-                          isDesktop: isDesktop,
-                          hPad: hPad,
-                        ),
 
                       if (mixes.containsKey('Quick Picks'))
                         _buildMixSection(
@@ -251,25 +249,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           hPad: hPad,
                         ),
 
-                      if (libraryProvider.recentAlbums.isNotEmpty) ...[
-                        HorizontalScrollSection(
-                          title: AppLocalizations.of(context)!.recentlyPlayed,
-                          padding: EdgeInsets.symmetric(horizontal: hPad),
-                          cardSize: isDesktop ? 180 : 150,
-                          children: libraryProvider.recentAlbums
-                              .take(10)
-                              .map(
-                                (album) => AlbumCard(
-                                  album: album,
-                                  size: isDesktop ? 180 : 150,
-                                  onTap: () => _openAlbum(context, album.id),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-
                       if (libraryProvider.playlists.isNotEmpty) ...[
                         HorizontalScrollSection(
                           title: AppLocalizations.of(context)!.yourPlaylists,
@@ -299,30 +278,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       if (!recommendationService.enabled &&
                           libraryProvider.randomSongs.isNotEmpty) ...[
-                        _SectionTitle(
+                        HorizontalScrollSection(
                           title: AppLocalizations.of(context)!.madeForYou,
-                          hPad: hPad,
+                          padding: EdgeInsets.symmetric(horizontal: hPad),
+                          cardSize: isDesktop ? 180 : 150,
+                          children: libraryProvider.randomSongs
+                              .take(10)
+                              .map(
+                                (song) => _DesktopSongCard(
+                                  song: song,
+                                  playlist: libraryProvider.randomSongs,
+                                  index: libraryProvider.randomSongs.indexOf(song),
+                                  size: isDesktop ? 180 : 150,
+                                ),
+                              )
+                              .toList(),
                         ),
-                        if (isDesktop) _DesktopSongTableHeader(hPad: hPad),
-                        ...libraryProvider.randomSongs.take(5).map((song) {
-                          final index = libraryProvider.randomSongs.indexOf(
-                            song,
-                          );
-                          if (isDesktop) {
-                            return _DesktopSongRow(
-                              song: song,
-                              playlist: libraryProvider.randomSongs,
-                              index: index,
-                              hPad: hPad,
-                            );
-                          }
-                          return SongTile(
-                            song: song,
-                            playlist: libraryProvider.randomSongs,
-                            index: index,
-                            showAlbum: true,
-                          );
-                        }),
                         const SizedBox(height: 24),
                       ],
 
@@ -429,275 +400,27 @@ class _HomeScreenState extends State<HomeScreen> {
     required bool isDesktop,
     required double hPad,
   }) {
-    if (isDesktop) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          HorizontalScrollSection(
-            title: title,
-            padding: EdgeInsets.symmetric(horizontal: hPad),
-            cardSize: 180,
-            children: songs.take(10).map((song) => _DesktopSongCard(
-              song: song,
-              playlist: songs,
-              index: songs.indexOf(song),
-              size: 180,
-            )).toList(),
-          ),
-          const SizedBox(height: 24),
-        ],
-      );
-    }
+    final cardSize = isDesktop ? 180.0 : 150.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionTitle(
+        HorizontalScrollSection(
           title: title,
-          icon: icon,
-          hPad: hPad,
+          padding: EdgeInsets.symmetric(horizontal: hPad),
+          cardSize: cardSize,
+          children: songs.take(10).map((song) => _DesktopSongCard(
+            song: song,
+            playlist: songs,
+            index: songs.indexOf(song),
+            size: cardSize,
+          )).toList(),
         ),
-        ...songs.take(5).map((song) => SongTile(
-          song: song,
-          playlist: songs,
-          index: songs.indexOf(song),
-          showAlbum: true,
-        )),
         const SizedBox(height: 24),
       ],
     );
   }
 }
 
-class _QuickAccessGrid extends StatelessWidget {
-  final List<dynamic> albums;
-  final List<dynamic> playlists;
-  final bool isDesktop;
-  final double hPad;
-
-  const _QuickAccessGrid({
-    required this.albums,
-    required this.playlists,
-    this.isDesktop = false,
-    this.hPad = 16,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final raw = [...albums, ...playlists].take(isDesktop ? 9 : 6).toList();
-
-    final items =
-        (!isDesktop && raw.length.isOdd) ? raw.sublist(0, raw.length - 1) : raw;
-
-    if (items.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    final subsonicService = Provider.of<SubsonicService>(
-      context,
-      listen: false,
-    );
-
-    if (isDesktop) {
-      return Padding(
-        padding: EdgeInsets.symmetric(horizontal: hPad),
-        child: GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 280,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: 3.2,
-          ),
-          itemCount: items.length,
-          itemBuilder: (context, index) =>
-              _buildTile(context, items[index], subsonicService),
-        ),
-      );
-    }
-
-    const tileHeight = 56.0;
-    const spacing = 8.0;
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: hPad),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final tileWidth = (constraints.maxWidth - spacing) / 2;
-          final ratio = tileWidth / tileHeight;
-          return GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: spacing,
-              crossAxisSpacing: spacing,
-              childAspectRatio: ratio,
-            ),
-            itemCount: items.length,
-            itemBuilder: (context, index) =>
-                _buildTile(context, items[index], subsonicService),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildTile(
-    BuildContext context,
-    dynamic item,
-    SubsonicService subsonicService,
-  ) {
-    final isPlaylist = item.runtimeType.toString().contains('Playlist');
-    String? imageUrl;
-    String title;
-    VoidCallback onTap;
-
-    if (isPlaylist) {
-      title = item.name;
-      imageUrl = item.coverArt != null
-          ? (isLocalFilePath(item.coverArt)
-              ? item.coverArt
-              : subsonicService.getCoverArtUrl(item.coverArt!, size: 100))
-          : null;
-      onTap = () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  PlaylistScreen(playlistId: item.id, playlistName: item.name),
-            ),
-          );
-    } else {
-      title = item.name;
-      imageUrl = item.coverArt != null
-          ? (isLocalFilePath(item.coverArt)
-              ? item.coverArt
-              : subsonicService.getCoverArtUrl(item.coverArt!, size: 100))
-          : null;
-      onTap = () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => AlbumScreen(albumId: item.id)),
-          );
-    }
-
-    return _QuickAccessTile(title: title, imageUrl: imageUrl, onTap: onTap);
-  }
-}
-
-class _QuickAccessTile extends StatefulWidget {
-  final String title;
-  final String? imageUrl;
-  final VoidCallback onTap;
-
-  const _QuickAccessTile({
-    required this.title,
-    this.imageUrl,
-    required this.onTap,
-  });
-
-  @override
-  State<_QuickAccessTile> createState() => _QuickAccessTileState();
-}
-
-class _QuickAccessTileState extends State<_QuickAccessTile> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        decoration: BoxDecoration(
-          color: isDark
-              ? (_isHovered ? AppTheme.darkElevated : AppTheme.darkCard)
-              : (_isHovered ? Colors.grey[300] : Colors.grey[200]),
-          borderRadius: BorderRadius.circular(4),
-          boxShadow: _isHovered
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : [],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: widget.onTap,
-            borderRadius: BorderRadius.circular(4),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.horizontal(
-                    left: Radius.circular(4),
-                  ),
-                  child: SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: widget.imageUrl != null
-                        ? (isLocalFilePath(widget.imageUrl)
-                            ? Image.file(
-                                File(widget.imageUrl!),
-                                fit: BoxFit.cover,
-                                errorBuilder: (ctx, e, _) => Container(
-                                  color: Colors.grey[800],
-                                  child: const Icon(
-                                    Icons.music_note,
-                                    color: Colors.white30,
-                                  ),
-                                ),
-                              )
-                            : CachedNetworkImage(
-                                imageUrl: widget.imageUrl!,
-                                fit: BoxFit.cover,
-                                placeholder: (ctx, e) =>
-                                    Container(color: Colors.grey[800]),
-                                errorWidget: (ctx, e, _) => Container(
-                                  color: Colors.grey[800],
-                                  child: const Icon(
-                                    Icons.music_note,
-                                    color: Colors.white30,
-                                  ),
-                                ),
-                              ))
-                        : Container(
-                            color: Colors.grey[800],
-                            child: const Icon(
-                              Icons.music_note,
-                              color: Colors.white30,
-                            ),
-                          ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    widget.title,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 8),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _PlaylistCard extends StatelessWidget {
   final dynamic playlist;
@@ -805,291 +528,7 @@ class _PlaylistCard extends StatelessWidget {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  final String title;
-  final IconData? icon;
-  final double hPad;
 
-  const _SectionTitle({required this.title, this.icon, this.hPad = 16});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: EdgeInsets.fromLTRB(hPad, 4, hPad, 4),
-      child: Row(
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 20, color: AppTheme.appleMusicRed),
-            const SizedBox(width: 8),
-          ],
-          Flexible(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black,
-                letterSpacing: -0.3,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DesktopSongTableHeader extends StatelessWidget {
-  final double hPad;
-  const _DesktopSongTableHeader({this.hPad = 16});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final labelStyle = TextStyle(
-      fontSize: 11,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 1.1,
-      color: isDark ? Colors.white38 : Colors.black38,
-    );
-    return Padding(
-      padding: EdgeInsets.fromLTRB(hPad, 4, hPad, 4),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 32,
-            child: Text('#', style: labelStyle, textAlign: TextAlign.center),
-          ),
-          const SizedBox(width: 12),
-          const SizedBox(width: 40),
-          const SizedBox(width: 12),
-          Expanded(flex: 5, child: Text('TITLE', style: labelStyle)),
-          Expanded(flex: 3, child: Text('ALBUM', style: labelStyle)),
-          const SizedBox(width: 40),
-          SizedBox(
-            width: 52,
-            child: Text('TIME', style: labelStyle, textAlign: TextAlign.right),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-    );
-  }
-}
-
-class _DesktopSongRow extends StatefulWidget {
-  final Song song;
-  final List<Song> playlist;
-  final int index;
-  final double hPad;
-
-  const _DesktopSongRow({
-    required this.song,
-    required this.playlist,
-    required this.index,
-    this.hPad = 16,
-  });
-
-  @override
-  State<_DesktopSongRow> createState() => _DesktopSongRowState();
-}
-
-class _DesktopSongRowState extends State<_DesktopSongRow> {
-  bool _hovered = false;
-
-  String _formatDuration(int? seconds) {
-    if (seconds == null) return '--:--';
-    final m = seconds ~/ 60;
-    final s = seconds % 60;
-    return '$m:${s.toString().padLeft(2, '0')}';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final song = widget.song;
-    final subsonicService = Provider.of<SubsonicService>(
-      context,
-      listen: false,
-    );
-
-    final isPlaying = context.select<PlayerProvider, bool>(
-      (p) => (p.currentSong?.id == song.id) && p.isPlaying,
-    );
-
-    final rowBg = _hovered
-        ? (isDark
-            ? Colors.white.withValues(alpha: 0.06)
-            : Colors.black.withValues(alpha: 0.04))
-        : Colors.transparent;
-
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () => context.read<PlayerProvider>().playSong(
-              song,
-              playlist: widget.playlist,
-              startIndex: widget.index,
-            ),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          color: rowBg,
-          padding: EdgeInsets.fromLTRB(widget.hPad, 6, widget.hPad, 6),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 32,
-                child: Center(
-                  child: _hovered
-                      ? Icon(
-                          Icons.play_arrow_rounded,
-                          size: 18,
-                          color: isDark ? Colors.white : Colors.black,
-                        )
-                      : isPlaying
-                          ? Icon(
-                              Icons.bar_chart_rounded,
-                              size: 18,
-                              color: AppTheme.appleMusicRed,
-                            )
-                          : Text(
-                              '${widget.index + 1}',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: isPlaying
-                                    ? AppTheme.appleMusicRed
-                                    : (isDark
-                                        ? Colors.white60
-                                        : Colors.black54),
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(3),
-                child: SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: song.coverArt != null
-                      ? CachedNetworkImage(
-                          imageUrl: subsonicService.getCoverArtUrl(
-                            song.coverArt!,
-                            size: 80,
-                          ),
-                          fit: BoxFit.cover,
-                          placeholder: (ctx, url) =>
-                              Container(color: Colors.grey[800]),
-                          errorWidget: (ctx, err, stack) => Container(
-                            color: Colors.grey[800],
-                            child: const Icon(
-                              Icons.music_note,
-                              size: 16,
-                              color: Colors.white30,
-                            ),
-                          ),
-                        )
-                      : Container(
-                          color: Colors.grey[800],
-                          child: const Icon(
-                            Icons.music_note,
-                            size: 16,
-                            color: Colors.white30,
-                          ),
-                        ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                flex: 5,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      song.title,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: isPlaying
-                            ? AppTheme.appleMusicRed
-                            : (isDark ? Colors.white : Colors.black),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (song.artist != null)
-                      Text(
-                        song.artist!,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? Colors.white54 : Colors.black54,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                  ],
-                ),
-              ),
-              Expanded(
-                flex: 3,
-                child: Text(
-                  song.album ?? '',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.white54 : Colors.black54,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              SizedBox(
-                width: 40,
-                child: _hovered || song.starred == true
-                    ? IconButton(
-                        icon: Icon(
-                          song.starred == true
-                              ? Icons.favorite_rounded
-                              : Icons.favorite_border_rounded,
-                          size: 16,
-                          color: song.starred == true
-                              ? AppTheme.appleMusicRed
-                              : (isDark ? Colors.white38 : Colors.black38),
-                        ),
-                        padding: EdgeInsets.zero,
-                        onPressed: () {
-                          context.read<LibraryProvider>().toggleFavoriteForSong(
-                                song,
-                              );
-                        },
-                      )
-                    : const SizedBox.shrink(),
-              ),
-              SizedBox(
-                width: 52,
-                child: Text(
-                  _formatDuration(song.duration),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.white54 : Colors.black54,
-                  ),
-                  textAlign: TextAlign.right,
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _DesktopSongCard extends StatefulWidget {
   final Song song;
