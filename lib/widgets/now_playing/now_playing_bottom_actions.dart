@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../cast_button.dart';
+import '../../screens/equalizer_screen.dart';
+import '../../services/equalizer_service.dart';
 
 class NowPlayingBottomActions extends StatelessWidget {
   final VoidCallback onLyricsTap;
@@ -20,6 +23,8 @@ class NowPlayingBottomActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final equalizerEnabled = context.select<EqualizerService, bool>((s) => s.enabled);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
       child: Row(
@@ -28,6 +33,17 @@ class NowPlayingBottomActions extends StatelessWidget {
           CastButton(
             iconSize: 24,
             iconColor: Colors.white.withValues(alpha: 0.5),
+          ),
+          _ActionButton(
+            icon: Icons.equalizer_rounded,
+            isActive: equalizerEnabled,
+            activeColor: accentColor,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const EqualizerScreen()),
+              );
+            },
           ),
           _ActionButton(
             icon: Icons.chat_bubble_outline_rounded,

@@ -2339,5 +2339,20 @@
   "autoDjSmartMix": "Mix intelligent",
   "@autoDjSmartMix": {},
   "noLikedAlbums": "Aucun album aimé",
-  "@noLikedAlbums": {}
+  "@noLikedAlbums": {},
+  "equalizer": "Égaliseur",
+  "equalizerNotSupported": "L'égaliseur n'est pas supporté sur cet appareil ou cette plateforme.",
+  "preset": "Préréglage",
+  "presetFlat": "Flat",
+  "presetRock": "Rock",
+  "presetPop": "Pop",
+  "presetJazz": "Jazz",
+  "presetClassical": "Classique",
+  "presetDance": "Dance",
+  "presetHipHop": "Hip-Hop",
+  "presetBassBoost": "Bass Boost",
+  "presetVocal": "Vocal",
+  "presetAcoustic": "Acoustique",
+  "presetCustom": "Personnalisé",
+  "reset": "Réinitialiser"
 }

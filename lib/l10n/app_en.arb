@@ -2176,5 +2176,20 @@
     "placeholders": {
       "title": { "type": "String" }
     }
-  }
+  },
+  "equalizer": "Equalizer",
+  "equalizerNotSupported": "Equalizer is not supported on this device or platform.",
+  "preset": "Preset",
+  "presetFlat": "Flat",
+  "presetRock": "Rock",
+  "presetPop": "Pop",
+  "presetJazz": "Jazz",
+  "presetClassical": "Classical",
+  "presetDance": "Dance",
+  "presetHipHop": "Hip-Hop",
+  "presetBassBoost": "Bass Boost",
+  "presetVocal": "Vocal",
+  "presetAcoustic": "Acoustic",
+  "presetCustom": "Custom",
+  "reset": "Reset"
 }

@@ -14,4 +14,5 @@ export 'update_service.dart';
 export 'upnp_service.dart';
 export 'jukebox_service.dart';
 export 'theme_service.dart';
+export 'equalizer_service.dart';
 export 'library_database_service.dart';

@@ -2193,4 +2193,50 @@ class AppLocalizationsFi extends AppLocalizations {
   String removeFromPlaylistConfirm(String title) {
     return 'Remove \"$title\" from this playlist?';
   }
+
+  @override
+  String get equalizer => 'Equalizer';
+
+  @override
+  String get equalizerNotSupported =>
+      'Equalizer is not supported on this device or platform.';
+
+  @override
+  String get preset => 'Preset';
+
+  @override
+  String get presetFlat => 'Flat';
+
+  @override
+  String get presetRock => 'Rock';
+
+  @override
+  String get presetPop => 'Pop';
+
+  @override
+  String get presetJazz => 'Jazz';
+
+  @override
+  String get presetClassical => 'Classical';
+
+  @override
+  String get presetDance => 'Dance';
+
+  @override
+  String get presetHipHop => 'Hip-Hop';
+
+  @override
+  String get presetBassBoost => 'Bass Boost';
+
+  @override
+  String get presetVocal => 'Vocal';
+
+  @override
+  String get presetAcoustic => 'Acoustic';
+
+  @override
+  String get presetCustom => 'Custom';
+
+  @override
+  String get reset => 'Reset';
 }

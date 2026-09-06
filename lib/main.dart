@@ -215,6 +215,9 @@ void main() async {
   // Create TranscodingService instance to share across providers
   final transcodingService = TranscodingService();
 
+  // Create EqualizerService
+  final equalizerService = EqualizerService(audioHandler.equalizer);
+
   // Create these providers eagerly (not lazily via `create:`) so their
   // Android Auto callbacks are registered on the audio handler as soon as the
   // engine starts. This matters for the headless cold start: when Android
@@ -246,6 +249,9 @@ void main() async {
       ),
       ChangeNotifierProvider<TranscodingService>.value(
         value: transcodingService,
+      ),
+      ChangeNotifierProvider<EqualizerService>.value(
+        value: equalizerService,
       ),
       ChangeNotifierProvider<LocalMusicService>.value(value: localMusicService),
       ChangeNotifierProvider<AuthProvider>.value(value: authProvider),

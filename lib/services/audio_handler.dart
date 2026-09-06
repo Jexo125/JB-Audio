@@ -36,7 +36,14 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   // interruptions there).
   static bool get _ownsFocusNatively => !kIsWeb && Platform.isAndroid;
 
+  static final _equalizer = !kIsWeb && Platform.isAndroid ? AndroidEqualizer() : null;
+
   final AudioPlayer _player = AudioPlayer(
+    audioPipeline: AudioPipeline(
+      androidAudioEffects: [
+        if (_equalizer != null) _equalizer!,
+      ],
+    ),
     handleAudioSessionActivation: !_ownsFocusNatively,
     handleInterruptions: !_ownsFocusNatively,
     audioLoadConfiguration: AudioLoadConfiguration(
@@ -66,6 +73,9 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
 
   /// Exposed so [PlayerProvider] can still call setUrl, play, pause, seek, etc.
   AudioPlayer get player => _player;
+
+  /// Exposed so [EqualizerService] can access the equalizer instance.
+  AndroidEqualizer? get equalizer => _equalizer;
 
   // ---------------------------------------------------------------------------
   // Callbacks wired by PlayerProvider AFTER construction.

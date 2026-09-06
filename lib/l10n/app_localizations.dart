@@ -4077,6 +4077,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove \"{title}\" from this playlist?'**
   String removeFromPlaylistConfirm(String title);
+
+  /// No description provided for @equalizer.
+  ///
+  /// In en, this message translates to:
+  /// **'Equalizer'**
+  String get equalizer;
+
+  /// No description provided for @equalizerNotSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Equalizer is not supported on this device or platform.'**
+  String get equalizerNotSupported;
+
+  /// No description provided for @preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Preset'**
+  String get preset;
+
+  /// No description provided for @presetFlat.
+  ///
+  /// In en, this message translates to:
+  /// **'Flat'**
+  String get presetFlat;
+
+  /// No description provided for @presetRock.
+  ///
+  /// In en, this message translates to:
+  /// **'Rock'**
+  String get presetRock;
+
+  /// No description provided for @presetPop.
+  ///
+  /// In en, this message translates to:
+  /// **'Pop'**
+  String get presetPop;
+
+  /// No description provided for @presetJazz.
+  ///
+  /// In en, this message translates to:
+  /// **'Jazz'**
+  String get presetJazz;
+
+  /// No description provided for @presetClassical.
+  ///
+  /// In en, this message translates to:
+  /// **'Classical'**
+  String get presetClassical;
+
+  /// No description provided for @presetDance.
+  ///
+  /// In en, this message translates to:
+  /// **'Dance'**
+  String get presetDance;
+
+  /// No description provided for @presetHipHop.
+  ///
+  /// In en, this message translates to:
+  /// **'Hip-Hop'**
+  String get presetHipHop;
+
+  /// No description provided for @presetBassBoost.
+  ///
+  /// In en, this message translates to:
+  /// **'Bass Boost'**
+  String get presetBassBoost;
+
+  /// No description provided for @presetVocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Vocal'**
+  String get presetVocal;
+
+  /// No description provided for @presetAcoustic.
+  ///
+  /// In en, this message translates to:
+  /// **'Acoustic'**
+  String get presetAcoustic;
+
+  /// No description provided for @presetCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get presetCustom;
+
+  /// No description provided for @reset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get reset;
 }
 
 class _AppLocalizationsDelegate

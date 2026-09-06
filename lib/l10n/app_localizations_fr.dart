@@ -2204,4 +2204,50 @@ class AppLocalizationsFr extends AppLocalizations {
   String removeFromPlaylistConfirm(String title) {
     return 'Retirer \"$title\" de cette playlist ?';
   }
+
+  @override
+  String get equalizer => 'Égaliseur';
+
+  @override
+  String get equalizerNotSupported =>
+      'L\'égaliseur n\'est pas supporté sur cet appareil ou cette plateforme.';
+
+  @override
+  String get preset => 'Préréglage';
+
+  @override
+  String get presetFlat => 'Flat';
+
+  @override
+  String get presetRock => 'Rock';
+
+  @override
+  String get presetPop => 'Pop';
+
+  @override
+  String get presetJazz => 'Jazz';
+
+  @override
+  String get presetClassical => 'Classique';
+
+  @override
+  String get presetDance => 'Dance';
+
+  @override
+  String get presetHipHop => 'Hip-Hop';
+
+  @override
+  String get presetBassBoost => 'Bass Boost';
+
+  @override
+  String get presetVocal => 'Vocal';
+
+  @override
+  String get presetAcoustic => 'Acoustique';
+
+  @override
+  String get presetCustom => 'Personnalisé';
+
+  @override
+  String get reset => 'Réinitialiser';
 }
