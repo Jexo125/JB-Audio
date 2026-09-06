@@ -5,6 +5,56 @@ All notable changes to JB Audio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.7] - 2026-09-06
+
+### 🎚️ Égaliseur
+* Ajout d'un égaliseur audio natif Android.
+* Ajout de plusieurs presets audio.
+* Ajout du réglage manuel des bandes.
+* Conservation des réglages de l'égaliseur.
+
+### 🎵 Lecture
+* Correction du blocage qui pouvait survenir quelques secondes avant la fin d'un morceau.
+* Stabilisation du buffering audio.
+
+### 🧠 Recommandations
+* Correction du suivi des écoutes.
+* Prise en compte de plusieurs morceaux écoutés.
+* Prise en compte de la fin réelle d'un morceau.
+* Mise à jour des recommandations en temps réel.
+
+### 📡 Transcodage
+* Amélioration de la gestion du transcodage bas débit.
+* Transmission correcte de `maxBitRate` et `format` au serveur.
+
+### 🔄 Mises à jour
+* Amélioration de l'affichage des Release Notes dans la fenêtre de mise à jour.
+* Les nouveautés de la version sont désormais récupérées automatiquement depuis la GitHub Release.
+
+## [2.0.6] - 2026-08-25
+
+### 🚀 Correctifs
+- **Lecture Audio** : Correction du blocage systématique à quelques secondes de la fin des morceaux.
+- **Buffering** : Rétablissement d'une marge de sécurité plus stable (30s min / 60s max) pour garantir la complétion des flux transcodés.
+- **Transcodage** : Correction de la limitation de débit. Les paramètres `maxBitRate` et `format` sont désormais transmis correctement.
+- **Recommandations** : Correction du moteur de tracking. Les écoutes successives sont désormais comptabilisées correctement.
+- **Scoring** : Amélioration du suivi de complétion des morceaux.
+- **Interface** : Actualisation en temps réel des statistiques d'écoute et du carrousel de recommandations.
+
+## [2.0.5] - 2026-08-25
+
+### 🧠 Recommandations
+- **Système de Recommandations Personnalisées** : Rétablissement complet du moteur apprenant de vos habitudes.
+- **Scoring Avancé** : Prise en compte des favoris et des morceaux passés.
+
+### 🎨 Interface
+- **Refonte de l'Accueil** : Priorisation des sections "Lus récemment" et "Recommandé pour vous".
+- **Carrousels Horizontaux** : Défilement fluide et homogène.
+
+### 📚 Bibliothèque
+- **Interface Épurée** : Suppression de la liste "Favoris + Récents" pour plus de clarté.
+- **Harmonisation UX** : Design moderne avec Gradients + Icônes.
+
 ## [2.0.4] - 2026-08-25
 
 ### 🚀 Nouvelles fonctionnalités

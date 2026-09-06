@@ -8,6 +8,20 @@ La version 2.0 apporte une refonte profonde des performances réseau, une gestio
 
 ---
 
+## 🚀 Nouveautés de la Version 2.0.7
+
+### 🎚️ Égaliseur Audio
+- **Égaliseur Natif** : Intégration d'un égaliseur audio natif Android pour une personnalisation sonore optimale.
+- **Presets & Manuel** : Plusieurs préréglages (Rock, Pop, Jazz...) et mode manuel jusqu'à 10 bandes.
+- **Persistance** : Vos réglages sont conservés entre les sessions.
+
+### 🛠️ Stabilité & Mises à jour
+- **Lecture** : Correction du blocage en fin de morceau.
+- **Mises à jour** : Nouveau système d'affichage des nouveautés directement dans le popup de mise à jour.
+- **Intelligence** : Amélioration du moteur de recommandations et du suivi des écoutes.
+
+---
+
 ## 🚀 Nouveautés de la Version 2.0
 
 ### 🎚️ Transcodage Navidrome / OpenSubsonic
