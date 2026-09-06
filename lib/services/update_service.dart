@@ -167,12 +167,23 @@ class UpdateService {
 
   static String stripMarkdown(String md) {
     return md
+        // Remove markdown headers while keeping text
         .replaceAll(RegExp(r'^#{1,6}\s+', multiLine: true), '')
+        // Replace bullet points with a standard bullet emoji
+        .replaceAll(RegExp(r'^[ \t]*[-*]\s+', multiLine: true), '• ')
+        // Remove bold and italic markers
+        .replaceAllMapped(RegExp(r'\*\*\*(.*?)\*\*\*'), (m) => m.group(1) ?? '')
         .replaceAllMapped(RegExp(r'\*\*(.*?)\*\*'), (m) => m.group(1) ?? '')
         .replaceAllMapped(RegExp(r'\*(.*?)\*'), (m) => m.group(1) ?? '')
+        .replaceAllMapped(RegExp(r'___(.*?)___'), (m) => m.group(1) ?? '')
+        .replaceAllMapped(RegExp(r'__(.*?)__'), (m) => m.group(1) ?? '')
+        .replaceAllMapped(RegExp(r'_(.*?)_'), (m) => m.group(1) ?? '')
+        // Remove code blocks
         .replaceAllMapped(RegExp(r'`{1,3}(.*?)`{1,3}'), (m) => m.group(1) ?? '')
+        // Remove links, keep text
         .replaceAllMapped(
             RegExp(r'\[([^\]]+)\]\([^)]+\)'), (m) => m.group(1) ?? '')
+        // Horizontal rules
         .replaceAll(RegExp(r'^---+$', multiLine: true), '─────────────')
         .trim();
   }

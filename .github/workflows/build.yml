@@ -16,6 +16,7 @@ jobs:
     outputs:
       version: ${{ steps.get_version.outputs.version }}
       should_release: ${{ steps.check_tag.outputs.should_release }}
+      notes: ${{ steps.extract_notes.outputs.notes }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -28,6 +29,26 @@ jobs:
           VERSION=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2 | cut -d '+' -f 1)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "✅ Detected version in pubspec: $VERSION"
+
+      - name: Extract Release Notes
+        id: extract_notes
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          {
+            echo 'notes<<EOF'
+            # Extract section between ## [VERSION] and next ## [ or end of file
+            ESCAPED_VERSION=$(echo $VERSION | sed 's/\./\\./g')
+            NOTES=$(awk "/^## \[$ESCAPED_VERSION\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md | sed '/^[[:space:]]*$/d' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+            
+            if [ -z "$NOTES" ]; then
+              echo "## 🎧 JB Audio v$VERSION"
+              echo ""
+              echo "Nouvelle version officielle de JB Audio pour Android."
+            else
+              echo "$NOTES"
+            fi
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
       - name: Check if tag exists
         id: check_tag
@@ -116,14 +137,7 @@ jobs:
         with:
           tag_name: v${{ needs.metadata.outputs.version }}
           name: JB Audio v${{ needs.metadata.outputs.version }}
-          body: |
-            ## 🎧 JB Audio v${{ needs.metadata.outputs.version }}
-
-            Nouvelle version officielle de JB Audio pour Android.
-
-            ### 📦 Téléchargements
-
-            - `JB-Audio-v${{ needs.metadata.outputs.version }}.apk`
+          body: ${{ needs.metadata.outputs.notes }}
           files: |
             artifacts/android/*.apk
           draft: false
