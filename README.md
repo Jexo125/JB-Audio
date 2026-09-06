@@ -8,17 +8,13 @@ La version 2.0 apporte une refonte profonde des performances réseau, une gestio
 
 ---
 
-## 🚀 Nouveautés de la Version 2.0.7
+## 🚀 Nouveautés de la Version 2.0.9
 
-### 🎚️ Égaliseur Audio
-- **Égaliseur Natif** : Intégration d'un égaliseur audio natif Android pour une personnalisation sonore optimale.
-- **Presets & Manuel** : Plusieurs préréglages (Rock, Pop, Jazz...) et mode manuel jusqu'à 10 bandes.
-- **Persistance** : Vos réglages sont conservés entre les sessions.
-
-### 🛠️ Stabilité & Mises à jour
-- **Lecture** : Correction du blocage en fin de morceau.
-- **Mises à jour** : Nouveau système d'affichage des nouveautés directement dans le popup de mise à jour.
-- **Intelligence** : Amélioration du moteur de recommandations et du suivi des écoutes.
+### 🎚️ Égaliseur Audio & Préampli
+- **Volume Naturel** : Suppression de l'atténuation automatique. Vos réglages sont désormais appliqués sans modifier le volume des autres fréquences.
+- **Préampli Global** : Nouveau curseur de gain global (-12 dB à +12 dB) pour une maîtrise totale du niveau sonore.
+- **Précision** : Contrôle ultra-fin (0,5 dB) sur toutes les bandes et le préampli.
+- **Liseré Rainbow** : La carte développeur bénéficie désormais d'une animation Rainbow premium.
 
 ---
 

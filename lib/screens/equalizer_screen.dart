@@ -99,13 +99,13 @@ class EqualizerScreen extends StatelessWidget {
         Slider(
           value: service.manualPreamp,
           min: -12.0,
-          max: 0.0,
-          divisions: 24, // 0.5 dB steps
+          max: 12.0,
+          divisions: 48, // 0.5 dB steps for 24 dB range
           onChanged: service.enabled ? (val) => service.setPreamp(val) : null,
           activeColor: Theme.of(context).colorScheme.primary,
         ),
         const Text(
-          "Gain global pour éviter la saturation.",
+          "Gain global appliqué à toutes les fréquences.",
           style: TextStyle(fontSize: 12, color: Colors.grey),
         ),
       ],

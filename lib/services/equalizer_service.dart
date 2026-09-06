@@ -28,8 +28,6 @@ class EqualizerService extends ChangeNotifier {
   }
 
   Future<void> _loadSettings() async {
-    if (_equalizer == null) return;
-
     try {
       final prefs = await SharedPreferences.getInstance();
       _enabled = prefs.getBool(_keyEnabled) ?? false;
@@ -38,18 +36,20 @@ class EqualizerService extends ChangeNotifier {
       
       final customGainsJson = prefs.getString(_keyCustomGains);
       
-      // We need to wait for parameters to be available to know the number of bands
-      final params = await _equalizer!.parameters;
-      
-      if (customGainsJson != null) {
-        final decoded = jsonDecode(customGainsJson);
-        if (decoded is List) {
-          _customGains = List<double>.from(decoded.map((e) => (e as num).toDouble()));
+      if (_equalizer != null) {
+        // We need to wait for parameters to be available to know the number of bands
+        final params = await _equalizer!.parameters;
+        
+        if (customGainsJson != null) {
+          final decoded = jsonDecode(customGainsJson);
+          if (decoded is List) {
+            _customGains = List<double>.from(decoded.map((e) => (e as num).toDouble()));
+          }
         }
-      }
-      
-      if (_customGains.length != params.bands.length) {
-        _customGains = List.filled(params.bands.length, 0.0);
+        
+        if (_customGains.length != params.bands.length) {
+          _customGains = List.filled(params.bands.length, 0.0);
+        }
       }
 
       // Initial apply
@@ -61,13 +61,10 @@ class EqualizerService extends ChangeNotifier {
   }
 
   Future<void> setEnabled(bool value) async {
-    if (_equalizer == null) return;
-    
     _enabled = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyEnabled, value);
     
-    // applySettings will handle the native enabled state
     await applySettings();
     notifyListeners();
   }
@@ -146,14 +143,13 @@ class EqualizerService extends ChangeNotifier {
       userGains = _getPresetGains(_currentPreset, params.bands.length);
     }
 
-    // Check if everything is flat (0.0 dB)
-    bool isAllZero = _manualPreamp == 0.0 && userGains.every((g) => g == 0.0);
-
     // Bypass logic: disable effect if service is disabled OR if settings are strictly neutral
+    // A setting is neutral if Preamp is 0 AND all bands are 0.
+    bool isAllZero = _manualPreamp == 0.0 && userGains.every((g) => g == 0.0);
     bool shouldBeEnabled = _enabled && !isAllZero;
     
     if (!shouldBeEnabled) {
-      // Neutralize bands before disabling to be safe (some hardware remembers state)
+      // Neutralize bands before disabling to be safe
       for (var band in params.bands) {
         await band.setGain(0.0);
       }
@@ -164,21 +160,19 @@ class EqualizerService extends ChangeNotifier {
     // Enable the effect before applying gains
     await _equalizer!.setEnabled(true);
 
-    // Headroom logic: avoid clipping by ensuring no applied gain is > 0 dB
-    double maxBoost = 0.0;
-    for (var g in userGains) {
-      if (g > maxBoost) maxBoost = g;
-    }
-    
-    // Auto-preamp offset to prevent clipping from boosts
-    double autoOffset = -maxBoost;
-    
-    // Apply final gains: User Gain + Auto Headroom + Manual Preamp
+    // Apply final gains: (User Band Gain + Manual Preamp) / 10.0
+    // The /10.0 factor corrects just_audio 0.9.46's internal *1000 multiplier
+    // to match Android's 100mB = 1dB standard.
     for (int i = 0; i < params.bands.length; i++) {
       if (i < userGains.length) {
-        double finalGain = userGains[i] + autoOffset + _manualPreamp;
-        // Clamp to physical limits of the device
-        finalGain = finalGain.clamp(params.minDecibels, params.maxDecibels);
+        double userRequestedGain = userGains[i] + _manualPreamp;
+        
+        // Final value sent to just_audio
+        double dartValue = userRequestedGain / 10.0;
+        
+        // Clamp to physical limits of the device (reported by just_audio in its own units)
+        double finalGain = dartValue.clamp(params.minDecibels, params.maxDecibels);
+        
         await params.bands[i].setGain(finalGain);
       }
     }
