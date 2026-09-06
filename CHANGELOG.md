@@ -31,6 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Amélioration de l'affichage des Release Notes dans la fenêtre de mise à jour.
 * Les nouveautés de la version sont désormais récupérées automatiquement depuis la GitHub Release.
 
+### 🎨 Interface
+* Amélioration visuelle de la carte développeur avec un liseré Rainbow animé.
+
 ## [2.0.6] - 2026-08-25
 
 ### 🚀 Correctifs

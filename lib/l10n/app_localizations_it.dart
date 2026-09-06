@@ -2249,4 +2249,13 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get reset => 'Reset';
+
+  @override
+  String get developerSlogan => 'Your music, your server, your freedom.';
+
+  @override
+  String get easterEggSecret => 'You found the secret! 👀';
+
+  @override
+  String get developerRealName => 'Jérémie Bourgade';
 }

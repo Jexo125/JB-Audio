@@ -1653,7 +1653,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get aboutPlatform => 'Plateforme';
 
   @override
-  String get aboutMadeBy => 'Par JB Audio';
+  String get aboutMadeBy => 'Développé par JB Audio';
 
   @override
   String get aboutGitHub => 'github.com/JB Audio';
@@ -2250,4 +2250,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get reset => 'Réinitialiser';
+
+  @override
+  String get developerSlogan => 'Votre musique, votre serveur, votre liberté.';
+
+  @override
+  String get easterEggSecret => 'Tu as trouvé le secret ! 👀';
+
+  @override
+  String get developerRealName => 'Jérémie Bourgade';
 }

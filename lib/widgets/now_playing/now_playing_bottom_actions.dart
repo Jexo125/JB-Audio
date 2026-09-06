@@ -35,7 +35,7 @@ class NowPlayingBottomActions extends StatelessWidget {
             iconColor: Colors.white.withValues(alpha: 0.5),
           ),
           _ActionButton(
-            icon: Icons.equalizer_rounded,
+            icon: Icons.tune_rounded,
             isActive: equalizerEnabled,
             activeColor: accentColor,
             onTap: () {

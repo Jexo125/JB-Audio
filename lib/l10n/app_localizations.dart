@@ -3133,7 +3133,7 @@ abstract class AppLocalizations {
   /// Developer credit text in the about tab
   ///
   /// In en, this message translates to:
-  /// **'Made by dddevid'**
+  /// **'Developed by JB Audio'**
   String get aboutMadeBy;
 
   /// Developer GitHub handle shown as subtitle
@@ -4167,6 +4167,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reset'**
   String get reset;
+
+  /// No description provided for @developerSlogan.
+  ///
+  /// In en, this message translates to:
+  /// **'Your music, your server, your freedom.'**
+  String get developerSlogan;
+
+  /// No description provided for @easterEggSecret.
+  ///
+  /// In en, this message translates to:
+  /// **'You found the secret! 👀'**
+  String get easterEggSecret;
+
+  /// No description provided for @developerRealName.
+  ///
+  /// In en, this message translates to:
+  /// **'Jérémie Bourgade'**
+  String get developerRealName;
 }
 
 class _AppLocalizationsDelegate

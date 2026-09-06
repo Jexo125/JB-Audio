@@ -1906,7 +1906,7 @@
   "@aboutPlatform": {
     "description": "About screen platform row title"
   },
-  "aboutMadeBy": "Par JB Audio",
+  "aboutMadeBy": "Développé par JB Audio",
   "@aboutMadeBy": {
     "description": "Developer credit text in the about tab"
   },
@@ -2354,5 +2354,8 @@
   "presetVocal": "Vocal",
   "presetAcoustic": "Acoustique",
   "presetCustom": "Personnalisé",
-  "reset": "Réinitialiser"
+  "reset": "Réinitialiser",
+  "developerSlogan": "Votre musique, votre serveur, votre liberté.",
+  "easterEggSecret": "Tu as trouvé le secret ! 👀",
+  "developerRealName": "Jérémie Bourgade"
 }

@@ -1625,7 +1625,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aboutPlatform => 'Platform';
 
   @override
-  String get aboutMadeBy => 'Made by dddevid';
+  String get aboutMadeBy => 'Developed by JB Audio';
 
   @override
   String get aboutGitHub => 'github.com/dddevid';
@@ -2220,4 +2220,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reset => 'Reset';
+
+  @override
+  String get developerSlogan => 'Your music, your server, your freedom.';
+
+  @override
+  String get easterEggSecret => 'You found the secret! 👀';
+
+  @override
+  String get developerRealName => 'Jérémie Bourgade';
 }

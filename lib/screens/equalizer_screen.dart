@@ -54,6 +54,8 @@ class EqualizerScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  _buildPreamp(context, equalizerService, l10n),
+                  const SizedBox(height: 32),
                   _buildPresetSelector(context, equalizerService, l10n),
                   const SizedBox(height: 32),
                   _buildEqualizerBands(context, equalizerService),
@@ -72,6 +74,41 @@ class EqualizerScreen extends StatelessWidget {
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildPreamp(BuildContext context, EqualizerService service, AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              l10n.preamp(service.manualPreamp > 0 ? "+${service.manualPreamp.toStringAsFixed(1)}" : service.manualPreamp.toStringAsFixed(1)),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            if (service.manualPreamp != 0.0)
+              IconButton(
+                icon: const Icon(Icons.undo_rounded, size: 20),
+                onPressed: () => service.setPreamp(0.0),
+                visualDensity: VisualDensity.compact,
+              ),
+          ],
+        ),
+        Slider(
+          value: service.manualPreamp,
+          min: -12.0,
+          max: 0.0,
+          divisions: 24, // 0.5 dB steps
+          onChanged: service.enabled ? (val) => service.setPreamp(val) : null,
+          activeColor: Theme.of(context).colorScheme.primary,
+        ),
+        const Text(
+          "Gain global pour éviter la saturation.",
+          style: TextStyle(fontSize: 12, color: Colors.grey),
+        ),
+      ],
     );
   }
 
@@ -147,11 +184,11 @@ class EqualizerScreen extends StatelessWidget {
               return _BandSlider(
                 index: index,
                 freq: band.centerFrequency,
-                min: params.minDecibels,
-                max: params.maxDecibels,
+                min: -12.0, // Standardized range
+                max: 12.0,
                 value: service.currentPreset == 'Custom' && index < service.customGains.length
                     ? service.customGains[index]
-                    : band.gain,
+                    : (service.currentPreset == 'Flat' ? 0.0 : band.gain), // Handle initial load sync
                 onChanged: (val) => service.setBandGain(index, val),
                 enabled: service.enabled,
               );
@@ -199,9 +236,10 @@ class _BandSlider extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            '${value > 0 ? "+" : ""}${value.toInt()}',
+            '${value > 0 ? "+" : ""}${value.toStringAsFixed(1)}',
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
               color: enabled ? null : Colors.grey,
             ),
           ),
@@ -215,8 +253,8 @@ class _BandSlider extends StatelessWidget {
               child: SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   trackHeight: 2,
-                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
                   activeTrackColor: Theme.of(context).colorScheme.primary,
                   inactiveTrackColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                   thumbColor: Theme.of(context).colorScheme.primary,
@@ -225,6 +263,7 @@ class _BandSlider extends StatelessWidget {
                   value: value.clamp(min, max),
                   min: min,
                   max: max,
+                  divisions: 48, // 0.5 dB steps for 24 dB range
                   onChanged: enabled ? onChanged : (val) {},
                 ),
               ),

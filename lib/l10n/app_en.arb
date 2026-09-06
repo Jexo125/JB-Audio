@@ -1830,7 +1830,7 @@
   "aboutPlatform": "Platform",
   "@aboutPlatform": { "description": "About screen platform row title" },
 
-  "aboutMadeBy": "Made by dddevid",
+  "aboutMadeBy": "Developed by JB Audio",
   "@aboutMadeBy": { "description": "Developer credit text in the about tab" },
 
   "aboutGitHub": "github.com/dddevid",
@@ -2191,5 +2191,8 @@
   "presetVocal": "Vocal",
   "presetAcoustic": "Acoustic",
   "presetCustom": "Custom",
-  "reset": "Reset"
+  "reset": "Reset",
+  "developerSlogan": "Your music, your server, your freedom.",
+  "easterEggSecret": "You found the secret! 👀",
+  "developerRealName": "Jérémie Bourgade"
 }

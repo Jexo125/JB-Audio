@@ -7,16 +7,19 @@ class EqualizerService extends ChangeNotifier {
   static const String _keyEnabled = 'equalizer_enabled';
   static const String _keyPreset = 'equalizer_preset';
   static const String _keyCustomGains = 'equalizer_custom_gains';
+  static const String _keyPreamp = 'equalizer_preamp';
 
   final AndroidEqualizer? _equalizer;
 
   bool _enabled = false;
   String _currentPreset = 'Flat';
   List<double> _customGains = [];
+  double _manualPreamp = 0.0;
   
   bool get enabled => _enabled;
   String get currentPreset => _currentPreset;
   List<double> get customGains => _customGains;
+  double get manualPreamp => _manualPreamp;
 
   AndroidEqualizer? get equalizer => _equalizer;
 
@@ -31,6 +34,8 @@ class EqualizerService extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       _enabled = prefs.getBool(_keyEnabled) ?? false;
       _currentPreset = prefs.getString(_keyPreset) ?? 'Flat';
+      _manualPreamp = prefs.getDouble(_keyPreamp) ?? 0.0;
+      
       final customGainsJson = prefs.getString(_keyCustomGains);
       
       // We need to wait for parameters to be available to know the number of bands
@@ -62,11 +67,8 @@ class EqualizerService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyEnabled, value);
     
-    await _equalizer!.setEnabled(value);
-    
-    if (value) {
-      await applySettings();
-    }
+    // applySettings will handle the native enabled state
+    await applySettings();
     notifyListeners();
   }
 
@@ -75,9 +77,7 @@ class EqualizerService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyPreset, presetName);
     
-    if (_enabled) {
-      await applySettings();
-    }
+    await applySettings();
     notifyListeners();
   }
 
@@ -90,22 +90,33 @@ class EqualizerService extends ChangeNotifier {
     }
     
     if (index >= 0 && index < _customGains.length) {
-      _customGains[index] = gain;
+      // Snap to 0.5 dB precision
+      final snappedGain = (gain * 2).round() / 2.0;
+      _customGains[index] = snappedGain;
       _currentPreset = 'Custom';
       
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_keyPreset, _currentPreset);
       await prefs.setString(_keyCustomGains, jsonEncode(_customGains));
       
-      if (_enabled) {
-        await applySettings();
-      }
+      await applySettings();
       notifyListeners();
     }
   }
 
+  Future<void> setPreamp(double value) async {
+    // Snap to 0.5 dB precision
+    _manualPreamp = (value * 2).round() / 2.0;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_keyPreamp, _manualPreamp);
+    
+    await applySettings();
+    notifyListeners();
+  }
+
   Future<void> reset() async {
     _currentPreset = 'Flat';
+    _manualPreamp = 0.0;
     if (_equalizer != null) {
       final params = await _equalizer!.parameters;
       _customGains = List.filled(params.bands.length, 0.0);
@@ -114,54 +125,78 @@ class EqualizerService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyEnabled, false);
     await prefs.setString(_keyPreset, _currentPreset);
+    await prefs.setDouble(_keyPreamp, 0.0);
     await prefs.remove(_keyCustomGains);
     
     _enabled = false;
-    if (_equalizer != null) {
-      await _equalizer!.setEnabled(false);
-      await applySettings();
-    }
-    
+    await applySettings();
     notifyListeners();
   }
 
   Future<void> applySettings() async {
     if (_equalizer == null) return;
-    
-    // just_audio's setEnabled handles the bypassing logic
-    await _equalizer!.setEnabled(_enabled);
-    if (!_enabled) return;
 
     final params = await _equalizer!.parameters;
     
-    List<double> targetGains;
+    // Determine user target gains
+    List<double> userGains;
     if (_currentPreset == 'Custom') {
-      targetGains = _customGains;
+      userGains = _customGains;
     } else {
-      targetGains = _getPresetGains(_currentPreset, params.bands.length);
+      userGains = _getPresetGains(_currentPreset, params.bands.length);
     }
 
+    // Check if everything is flat (0.0 dB)
+    bool isAllZero = _manualPreamp == 0.0 && userGains.every((g) => g == 0.0);
+
+    // Bypass logic: disable effect if service is disabled OR if settings are strictly neutral
+    bool shouldBeEnabled = _enabled && !isAllZero;
+    
+    if (!shouldBeEnabled) {
+      // Neutralize bands before disabling to be safe (some hardware remembers state)
+      for (var band in params.bands) {
+        await band.setGain(0.0);
+      }
+      await _equalizer!.setEnabled(false);
+      return;
+    }
+
+    // Enable the effect before applying gains
+    await _equalizer!.setEnabled(true);
+
+    // Headroom logic: avoid clipping by ensuring no applied gain is > 0 dB
+    double maxBoost = 0.0;
+    for (var g in userGains) {
+      if (g > maxBoost) maxBoost = g;
+    }
+    
+    // Auto-preamp offset to prevent clipping from boosts
+    double autoOffset = -maxBoost;
+    
+    // Apply final gains: User Gain + Auto Headroom + Manual Preamp
     for (int i = 0; i < params.bands.length; i++) {
-      if (i < targetGains.length) {
-        // Clamp gain to supported range
-        final gain = targetGains[i].clamp(params.minDecibels, params.maxDecibels);
-        await params.bands[i].setGain(gain);
+      if (i < userGains.length) {
+        double finalGain = userGains[i] + autoOffset + _manualPreamp;
+        // Clamp to physical limits of the device
+        finalGain = finalGain.clamp(params.minDecibels, params.maxDecibels);
+        await params.bands[i].setGain(finalGain);
       }
     }
   }
 
   List<double> _getPresetGains(String name, int bandCount) {
+    // Standardized curves for 5 bands
     final Map<String, List<double>> basePresets = {
-      'Flat': [0, 0, 0, 0, 0],
-      'Rock': [4, 2, -1, 2, 4],
-      'Pop': [-1, 1, 2, 1, -1],
-      'Jazz': [3, 2, 0, 2, 3],
-      'Classical': [4, 3, 0, 3, 4],
-      'Dance': [5, 3, 0, 2, 1],
-      'Hip-Hop': [5, 2, 0, 2, 3],
-      'Bass Boost': [6, 3, 0, 0, 0],
-      'Vocal': [-2, 0, 3, 2, -1],
-      'Acoustic': [3, 2, 0, 2, 3],
+      'Flat': [0.0, 0.0, 0.0, 0.0, 0.0],
+      'Rock': [4.5, 2.0, -1.0, 2.5, 4.5],
+      'Pop': [-1.5, 1.5, 3.0, 1.5, -1.0],
+      'Jazz': [3.5, 1.5, 0.0, 1.5, 3.5],
+      'Classical': [4.0, 2.5, 0.0, 2.5, 4.0],
+      'Dance': [5.5, 3.5, 0.0, 2.5, 1.0],
+      'Hip-Hop': [5.0, 2.5, 0.0, 2.0, 4.0],
+      'Bass Boost': [6.0, 3.5, 0.0, 0.0, 0.0],
+      'Vocal': [-2.0, 0.0, 3.5, 2.5, -1.5],
+      'Acoustic': [3.5, 2.0, 0.5, 2.5, 3.5],
     };
 
     final base = basePresets[name] ?? basePresets['Flat']!;

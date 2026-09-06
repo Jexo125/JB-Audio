@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import '../services/analytics_service.dart';
 import '../widgets/settings/settings_section_card.dart';
+import '../widgets/settings/developer_card.dart';
 import '../utils/context_extensions.dart';
 
 /// Onglet "À propos" affichant les informations de version et de plateforme.
@@ -61,12 +62,7 @@ class SettingsAboutTab extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Section Développeur
-        SettingsSectionCard(
-          title: AppLocalizations.of(context)!.sectionAboutDeveloper,
-          children: [
-            _buildDeveloperInfo(context),
-          ],
-        ),
+        const DeveloperCard(),
 
         const SizedBox(height: 40),
       ],
@@ -110,34 +106,6 @@ class SettingsAboutTab extends StatelessWidget {
               ? AppTheme.darkSecondaryText
               : AppTheme.lightSecondaryText,
         ),
-      ),
-    );
-  }
-
-  Widget _buildDeveloperInfo(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF5856D6), Color(0xFFAF52DE)],
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.code_rounded, color: Colors.white, size: 18),
-          ),
-          const SizedBox(width: 12),
-          const Text(
-            'Développé par JB Audio',
-            style: TextStyle(fontSize: 16),
-          ),
-        ],
       ),
     );
   }
