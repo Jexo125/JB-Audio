@@ -186,9 +186,7 @@ class EqualizerScreen extends StatelessWidget {
                 freq: band.centerFrequency,
                 min: -12.0, // Standardized range
                 max: 12.0,
-                value: service.currentPreset == 'Custom' && index < service.customGains.length
-                    ? service.customGains[index]
-                    : (service.currentPreset == 'Flat' ? 0.0 : band.gain), // Handle initial load sync
+                value: service.getBandUserGain(index, bands.length),
                 onChanged: (val) => service.setBandGain(index, val),
                 enabled: service.enabled,
               );

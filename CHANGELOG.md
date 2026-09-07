@@ -5,6 +5,12 @@ All notable changes to JB Audio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.10] - 2026-09-07
+
+### 🎛️ Audio
+* Correction de l’affichage des valeurs de l’égaliseur Android pour garantir l’affichage fidèle des gains réels des presets et des réglages personnalisés.
+* Amélioration de la précision et de la cohérence des réglages de l’égaliseur.
+
 ## [2.0.9] - 2026-09-06
 
 ### 🎛️ Audio

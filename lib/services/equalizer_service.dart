@@ -130,6 +130,17 @@ class EqualizerService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Returns the user-facing gain (in dB) for a specific band.
+  double getBandUserGain(int index, int totalBands) {
+    if (_currentPreset == 'Custom') {
+      if (index < _customGains.length) return _customGains[index];
+      return 0.0;
+    }
+    final presetGains = _getPresetGains(_currentPreset, totalBands);
+    if (index < presetGains.length) return presetGains[index];
+    return 0.0;
+  }
+
   Future<void> applySettings() async {
     if (_equalizer == null) return;
 

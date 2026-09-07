@@ -8,13 +8,12 @@ La version 2.0 apporte une refonte profonde des performances réseau, une gestio
 
 ---
 
-## 🚀 Nouveautés de la Version 2.0.9
+## 🚀 Nouveautés de la Version 2.0.10
 
-### 🎚️ Égaliseur Audio & Préampli
-- **Volume Naturel** : Suppression de l'atténuation automatique. Vos réglages sont désormais appliqués sans modifier le volume des autres fréquences.
-- **Préampli Global** : Nouveau curseur de gain global (-12 dB à +12 dB) pour une maîtrise totale du niveau sonore.
-- **Précision** : Contrôle ultra-fin (0,5 dB) sur toutes les bandes et le préampli.
-- **Liseré Rainbow** : La carte développeur bénéficie désormais d'une animation Rainbow premium.
+### 🎚️ Égaliseur Audio
+- **Affichage Fidèle** : Correction de la représentation visuelle des gains pour correspondre exactement aux réglages réels (presets et manuel).
+- **Précision Acoustique** : Amélioration de la cohérence des réglages pour une expérience sonore plus transparente et maîtrisée.
+- **Volume Naturel** : Maintien de l'architecture additive supprimant toute atténuation automatique indésirable.
 
 ---
 
