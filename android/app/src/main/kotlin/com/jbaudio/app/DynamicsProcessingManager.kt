@@ -2,8 +2,6 @@ package com.jbaudio.app
 
 import android.media.audiofx.DynamicsProcessing
 import android.util.Log
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 class DynamicsProcessingManager {
     private var dynamicsProcessing: DynamicsProcessing? = null
@@ -40,28 +38,27 @@ class DynamicsProcessingManager {
                 true                           // Limiter
             )
 
-            // Setup Pre-EQ bands for each channel
-            for (c in 0 until CHANNEL_COUNT) {
-                builder.setInputGainByChannelIndex(c, 0f)
-                for (b in CUTOFF_FREQUENCIES.indices) {
-                    val eqBand = DynamicsProcessing.EqBand(true, CUTOFF_FREQUENCIES[b], 0f)
-                    builder.setPreEqBandByChannelIndex(c, b, eqBand)
-                }
-                
-                // Configure Limiter for safety (transparent protection)
-                // Threshold very close to 0 dBFS, high ratio, fast attack.
-                val limiter = DynamicsProcessing.Limiter(
-                    true,  // inUse
-                    true,  // enabled
-                    0,     // linkGroup
-                    1f,    // attackTime (ms)
-                    100f,  // releaseTime (ms)
-                    10f,   // ratio (10:1)
-                    -0.1f, // threshold (dBFS)
-                    0f     // postGain (dB)
-                )
-                builder.setLimiterByChannelIndex(c, limiter)
+            // Setup Pre-EQ stage (applied to all channels for consistency)
+            val preEq = DynamicsProcessing.Eq(true, true, CUTOFF_FREQUENCIES.size)
+            for (b in CUTOFF_FREQUENCIES.indices) {
+                val eqBand = DynamicsProcessing.EqBand(true, CUTOFF_FREQUENCIES[b], 0f)
+                preEq.setBand(b, eqBand)
             }
+            builder.setPreEqAllChannelsTo(preEq)
+
+            // Configure Limiter for safety (transparent protection)
+            val limiter = DynamicsProcessing.Limiter(
+                true,  // inUse
+                true,  // enabled
+                0,     // linkGroup
+                1f,    // attackTime (ms)
+                100f,  // releaseTime (ms)
+                10f,   // ratio (10:1)
+                -0.1f, // threshold (dBFS)
+                0f     // postGain (dB)
+            )
+            builder.setLimiterAllChannelsTo(limiter)
+            builder.setInputGainAllChannelsTo(0f)
 
             dynamicsProcessing = DynamicsProcessing(0, sessionId, builder.build())
             dynamicsProcessing?.enabled = isEnabled
@@ -78,22 +75,25 @@ class DynamicsProcessingManager {
 
     fun setPreamp(gain: Float) {
         dynamicsProcessing?.let { dp ->
-            for (c in 0 until CHANNEL_COUNT) {
-                dp.setInputGainByChannelIndex(c, gain)
+            try {
+                dp.setInputGainAllChannelsTo(gain)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to set input gain", e)
             }
         }
     }
 
     fun setBandGains(gains: FloatArray) {
         dynamicsProcessing?.let { dp ->
-            for (c in 0 until CHANNEL_COUNT) {
+            try {
                 for (b in gains.indices) {
                     if (b < CUTOFF_FREQUENCIES.size) {
-                        val band = dp.getPreEqBandByChannelIndex(c, b)
-                        band.gain = gains[b]
-                        dp.setPreEqBandByChannelIndex(c, b, band)
+                        val eqBand = DynamicsProcessing.EqBand(true, CUTOFF_FREQUENCIES[b], gains[b])
+                        dp.setPreEqBandAllChannelsTo(b, eqBand)
                     }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to set band gains", e)
             }
         }
     }
