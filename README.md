@@ -8,12 +8,14 @@ La version 2.0 apporte une refonte profonde des performances réseau, une gestio
 
 ---
 
-## 🚀 Nouveautés de la Version 2.0.10
+## 🚀 Nouveautés de la Version 2.1.0
 
-### 🎚️ Égaliseur Audio
-- **Affichage Fidèle** : Correction de la représentation visuelle des gains pour correspondre exactement aux réglages réels (presets et manuel).
-- **Précision Acoustique** : Amélioration de la cohérence des réglages pour une expérience sonore plus transparente et maîtrisée.
-- **Volume Naturel** : Maintien de l'architecture additive supprimant toute atténuation automatique indésirable.
+### 🎚️ Égaliseur Audio & Préampli (DynamicsProcessing)
+- **Puissance Sonore** : Migration vers une architecture native `DynamicsProcessing` offrant des boosts de fréquences nettement plus perceptibles et musicaux.
+- **Préampli Global** : Nouveau curseur de gain global (-12 dB à +12 dB) indépendant des bandes de l'égaliseur.
+- **Précision** : Réglage ultra-fin par pas de 0,5 dB pour une signature sonore sur mesure.
+- **Sécurité & Transparence** : Limitation de niveau intégrée pour éviter le clipping et bypass physique réel de l'effet en mode neutre.
+- **Compatibilité** : Maintien du moteur classique pour les appareils plus anciens (Android < 9).
 
 ---
 

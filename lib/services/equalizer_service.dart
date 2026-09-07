@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 
 class EqualizerService extends ChangeNotifier {
   static const String _keyEnabled = 'equalizer_enabled';
@@ -9,22 +11,59 @@ class EqualizerService extends ChangeNotifier {
   static const String _keyCustomGains = 'equalizer_custom_gains';
   static const String _keyPreamp = 'equalizer_preamp';
 
+  static const _dynamicsChannel = MethodChannel('com.devid.musly/dynamics');
+
   final AndroidEqualizer? _equalizer;
+  final Stream<int>? _sessionIdStream;
 
   bool _enabled = false;
   String _currentPreset = 'Flat';
   List<double> _customGains = [];
   double _manualPreamp = 0.0;
   
+  bool _useDynamics = false;
+  int _currentSessionId = -1;
+
   bool get enabled => _enabled;
   String get currentPreset => _currentPreset;
   List<double> get customGains => _customGains;
   double get manualPreamp => _manualPreamp;
+  bool get useDynamics => _useDynamics;
 
   AndroidEqualizer? get equalizer => _equalizer;
 
-  EqualizerService(this._equalizer) {
+  EqualizerService(this._equalizer, [this._sessionIdStream]) {
+    _initEngine();
     _loadSettings();
+    _setupSessionIdListener();
+  }
+
+  Future<void> _initEngine() async {
+    if (!kIsWeb && Platform.isAndroid) {
+      try {
+        final int apiLevel = await _dynamicsChannel.invokeMethod('getApiLevel');
+        if (apiLevel >= 28) {
+          _useDynamics = true;
+          debugPrint('[Equalizer] Using DynamicsProcessing engine (API $apiLevel)');
+        } else {
+          debugPrint('[Equalizer] Using Legacy Equalizer engine (API $apiLevel)');
+        }
+      } catch (e) {
+        debugPrint('[Equalizer] Failed to check API level, falling back to legacy: $e');
+      }
+    }
+  }
+
+  void _setupSessionIdListener() {
+    _sessionIdStream?.listen((sessionId) {
+      if (sessionId != _currentSessionId) {
+        _currentSessionId = sessionId;
+        if (_useDynamics) {
+          _dynamicsChannel.invokeMethod('initialize', {'sessionId': sessionId});
+          applySettings();
+        }
+      }
+    });
   }
 
   Future<void> _loadSettings() async {
@@ -141,50 +180,59 @@ class EqualizerService extends ChangeNotifier {
     return 0.0;
   }
 
-  Future<void> applySettings() async {
-    if (_equalizer == null) return;
+  /// Returns the user-facing frequency label for a specific band.
+  double getBandFrequency(int index, double nativeFrequency) {
+    if (_useDynamics) {
+      const frequencies = [100.0, 300.0, 1000.0, 4000.0, 20000.0];
+      if (index < frequencies.length) return frequencies[index];
+    }
+    return nativeFrequency;
+  }
 
-    final params = await _equalizer!.parameters;
-    
+  Future<void> applySettings() async {
     // Determine user target gains
     List<double> userGains;
+    const totalBands = 5; // We use 5 bands for both engines for consistency
     if (_currentPreset == 'Custom') {
       userGains = _customGains;
     } else {
-      userGains = _getPresetGains(_currentPreset, params.bands.length);
+      userGains = _getPresetGains(_currentPreset, totalBands);
     }
 
-    // Bypass logic: disable effect if service is disabled OR if settings are strictly neutral
-    // A setting is neutral if Preamp is 0 AND all bands are 0.
+    // Bypass logic
     bool isAllZero = _manualPreamp == 0.0 && userGains.every((g) => g == 0.0);
     bool shouldBeEnabled = _enabled && !isAllZero;
-    
-    if (!shouldBeEnabled) {
-      // Neutralize bands before disabling to be safe
-      for (var band in params.bands) {
-        await band.setGain(0.0);
+
+    if (_useDynamics) {
+      // Disable legacy EQ if it exists
+      if (_equalizer != null) {
+        await _equalizer!.setEnabled(false);
       }
-      await _equalizer!.setEnabled(false);
-      return;
-    }
-
-    // Enable the effect before applying gains
-    await _equalizer!.setEnabled(true);
-
-    // Apply final gains: (User Band Gain + Manual Preamp) / 10.0
-    // The /10.0 factor corrects just_audio 0.9.46's internal *1000 multiplier
-    // to match Android's 100mB = 1dB standard.
-    for (int i = 0; i < params.bands.length; i++) {
-      if (i < userGains.length) {
-        double userRequestedGain = userGains[i] + _manualPreamp;
-        
-        // Final value sent to just_audio
-        double dartValue = userRequestedGain / 10.0;
-        
-        // Clamp to physical limits of the device (reported by just_audio in its own units)
-        double finalGain = dartValue.clamp(params.minDecibels, params.maxDecibels);
-        
-        await params.bands[i].setGain(finalGain);
+      await _dynamicsChannel.invokeMethod('setEnabled', {'enabled': shouldBeEnabled});
+      if (shouldBeEnabled) {
+        await _dynamicsChannel.invokeMethod('setPreamp', {'gain': _manualPreamp});
+        await _dynamicsChannel.invokeMethod('setBandGains', {'gains': userGains});
+      }
+    } else if (_equalizer != null) {
+      // Disable dynamics engine
+      await _dynamicsChannel.invokeMethod('setEnabled', {'enabled': false});
+      
+      final params = await _equalizer!.parameters;
+      if (!shouldBeEnabled) {
+        for (var band in params.bands) {
+          await band.setGain(0.0);
+        }
+        await _equalizer!.setEnabled(false);
+      } else {
+        await _equalizer!.setEnabled(true);
+        for (int i = 0; i < params.bands.length; i++) {
+          if (i < userGains.length) {
+            double userRequestedGain = userGains[i] + _manualPreamp;
+            double dartValue = userRequestedGain / 10.0;
+            double finalGain = dartValue.clamp(params.minDecibels, params.maxDecibels);
+            await params.bands[i].setGain(finalGain);
+          }
+        }
       }
     }
   }

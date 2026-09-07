@@ -5,6 +5,15 @@ All notable changes to JB Audio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-09-07
+
+### 🎛️ Audio
+* Migration de l'égaliseur Android vers une architecture native basée sur DynamicsProcessing pour les appareils Android compatibles.
+* Ajout d'un préampli global indépendant avec réglage de -12 dB à +12 dB.
+* Amélioration du contrôle des bandes de fréquences avec un réglage précis par pas de 0,5 dB.
+* Ajout d'une gestion native du traitement audio avec limitation de niveau et bypass réel de l'égaliseur.
+* Conservation d'un fallback AndroidEqualizer pour les versions d'Android ne prenant pas en charge DynamicsProcessing.
+
 ## [2.0.10] - 2026-09-07
 
 ### 🎛️ Audio

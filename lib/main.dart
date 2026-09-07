@@ -216,7 +216,10 @@ void main() async {
   final transcodingService = TranscodingService();
 
   // Create EqualizerService
-  final equalizerService = EqualizerService(audioHandler.equalizer);
+  final equalizerService = EqualizerService(
+    audioHandler.equalizer,
+    audioHandler.player.androidAudioSessionIdStream.where((id) => id != null).cast<int>(),
+  );
 
   // Create these providers eagerly (not lazily via `create:`) so their
   // Android Auto callbacks are registered on the audio handler as soon as the

@@ -172,21 +172,25 @@ class EqualizerScreen extends StatelessWidget {
         }
         
         final params = snapshot.data!;
-        final bands = params.bands;
+        final allBands = params.bands;
+        // Limit to 5 bands if using DynamicsProcessing engine
+        final displayBandCount = service.useDynamics ? 5 : allBands.length;
         
         return Container(
           height: 300,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(bands.length, (index) {
-              final band = bands[index];
+            children: List.generate(displayBandCount, (index) {
+              final band = index < allBands.length ? allBands[index] : null;
+              final freq = band != null ? band.centerFrequency : 0.0;
+              
               return _BandSlider(
                 index: index,
-                freq: band.centerFrequency,
+                freq: service.getBandFrequency(index, freq),
                 min: -12.0, // Standardized range
                 max: 12.0,
-                value: service.getBandUserGain(index, bands.length),
+                value: service.getBandUserGain(index, displayBandCount),
                 onChanged: (val) => service.setBandGain(index, val),
                 enabled: service.enabled,
               );
