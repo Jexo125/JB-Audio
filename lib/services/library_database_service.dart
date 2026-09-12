@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 
 /// SQLite-based persistent storage for the music library.
@@ -13,7 +14,7 @@ import '../models/models.dart';
 /// millions of rows can be written without spikes in memory usage.
 class LibraryDatabaseService {
   static const String _dbName = 'musly_library.db';
-  static const int _dbVersion = 2; // bumped from 1 after schema changes
+  static const int _dbVersion = 3; // bumped from 2 for listening_events
   static const int _batchSize = 1000;
 
   Database? _db;
@@ -49,6 +50,20 @@ class LibraryDatabaseService {
       try {
         await db.execute(
             'ALTER TABLE songs ADD COLUMN userRating INTEGER');
+      } catch (_) {}
+    }
+    if (oldVersion < 3) {
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS listening_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            song_id TEXT NOT NULL,
+            timestamp TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            duration_seconds INTEGER NOT NULL DEFAULT 0,
+            completed INTEGER NOT NULL DEFAULT 0
+          )
+        ''');
       } catch (_) {}
     }
   }
@@ -134,6 +149,17 @@ class LibraryDatabaseService {
         'CREATE INDEX IF NOT EXISTS idx_song_artistId ON songs(artistId)');
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_album_artistId ON albums(artistId)');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS listening_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        song_id TEXT NOT NULL,
+        timestamp TEXT NOT NULL,
+        event_type TEXT NOT NULL,
+        duration_seconds INTEGER NOT NULL DEFAULT 0,
+        completed INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
   }
 
   // ── Batch inserts ───────────────────────────────────────────────────────
@@ -358,6 +384,27 @@ class LibraryDatabaseService {
     if (_db != null) {
       await _db!.close();
       _db = null;
+    }
+  }
+
+  Future<void> insertListeningEvent({
+    required String songId,
+    required String eventType,
+    required int durationSeconds,
+    required int completed,
+    required String timestamp,
+  }) async {
+    try {
+      final db = await database;
+      await db.insert('listening_events', {
+        'song_id': songId,
+        'event_type': eventType,
+        'duration_seconds': durationSeconds,
+        'completed': completed,
+        'timestamp': timestamp,
+      });
+    } catch (e) {
+      debugPrint('Database error in insertListeningEvent: $e');
     }
   }
 

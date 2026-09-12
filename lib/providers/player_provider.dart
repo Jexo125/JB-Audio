@@ -36,6 +36,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   bool _currentSongValidated = false;
   bool _currentSongTracked = false;
   bool _currentSongCompletedTracked = false;
+  int _lastSecondsTracked = 0;
+  int _accumulatedListenTime = 0;
   VoidCallback? onAudioFocusDenied;
 
   List<Song> _queue = [];
@@ -117,6 +119,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       debugPrint('[Player] App lifecycle state: $state - saving queue state');
+      _recordRecommendationSignal();
       _saveQueueStateImmediate();
     }
   }
@@ -780,10 +783,49 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
             }
           }
 
+          // Incremental listen time tracking
+          if (_currentSongTracked && _currentSong != null) {
+            final currentSecs = pos.inSeconds;
+            final delta = currentSecs - _lastSecondsTracked;
+            if (delta > 0 && delta <= 3) {
+              _accumulatedListenTime += delta;
+              _lastSecondsTracked = currentSecs;
+              if (_accumulatedListenTime >= 5) {
+                _recommendationService?.trackIncrementalListenTime(
+                    _currentSong!, _accumulatedListenTime);
+                _accumulatedListenTime = 0;
+              }
+            } else if (delta < -2) {
+              // Detect loop in Repeat One or manual seek back to start
+              if ((_repeatMode == RepeatMode.one || pos.inSeconds < 2) &&
+                  _lastSecondsTracked > 5) {
+                // If it was an automatic loop, we might have a completion to record
+                final songDur = _duration.inSeconds;
+                if (!_currentSongCompletedTracked &&
+                    songDur > 0 &&
+                    _lastSecondsTracked >= songDur - 3) {
+                  _recordRecommendationSignal(completed: true);
+                } else if (_accumulatedListenTime > 0) {
+                  // Flush remaining time before reset
+                  _recommendationService?.trackIncrementalListenTime(
+                      _currentSong!, _accumulatedListenTime);
+                }
+
+                // Reset flags for the NEW loop/play
+                _currentSongValidated = false;
+                _currentSongTracked = false;
+                _currentSongCompletedTracked = false;
+                _lastSecondsTracked = pos.inSeconds;
+                _accumulatedListenTime = 0;
+              } else {
+                _lastSecondsTracked = currentSecs;
+              }
+            } else if (delta != 0) {
+              _lastSecondsTracked = currentSecs;
+            }
+          }
+
           notifyListeners();
-          
-          // Debounce queue state saving - only save every few seconds or when paused
-          // (Already handled by _saveQueueState debouncer)
           _saveQueueState();
         }
       });
@@ -809,6 +851,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
             _currentSongValidated = false;
             _currentSongTracked = false;
             _currentSongCompletedTracked = false;
+            _lastSecondsTracked = 0;
+            _accumulatedListenTime = 0;
 
             _refreshArtworkUrl();
             notifyListeners();
@@ -879,6 +923,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       _currentSongValidated = false;
       _currentSongTracked = false;
       _currentSongCompletedTracked = false;
+      _lastSecondsTracked = 0;
+      _accumulatedListenTime = 0;
 
       notifyListeners();
       _refreshArtworkUrl();
@@ -1006,6 +1052,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     await _audioPlayer.pause();
     _isPlaying = false;
+    _recordRecommendationSignal();
     notifyListeners();
     _updateAndroidAuto();
     _saveQueueState();
@@ -1092,6 +1139,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     _currentSongValidated = false;
     _currentSongTracked = false;
     _currentSongCompletedTracked = false;
+    _lastSecondsTracked = 0;
+    _accumulatedListenTime = 0;
 
     notifyListeners();
     _refreshArtworkUrl();
@@ -1287,6 +1336,8 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
       _currentSongValidated = false;
       _currentSongTracked = false;
       _currentSongCompletedTracked = false;
+      _lastSecondsTracked = 0;
+      _accumulatedListenTime = 0;
 
       notifyListeners();
 
@@ -1318,25 +1369,44 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     if (completed) {
       if (_currentSongCompletedTracked) return;
       
+      if (_accumulatedListenTime > 0 && _currentSongTracked) {
+        service.trackIncrementalListenTime(song, _accumulatedListenTime);
+        _accumulatedListenTime = 0;
+      }
+
       if (_currentSongTracked) {
-        service.trackSongCompletion(song);
+        service.trackSongCompletion(song, durationPlayed: _position.inSeconds);
       } else {
-        service.trackSongPlay(song, completed: true);
+        service.trackSongPlay(song, completed: true, durationPlayed: _position.inSeconds);
       }
       _currentSongTracked = true;
       _currentSongCompletedTracked = true;
     } else if (isSkip) {
-      if (_currentSongTracked) return;
+      if (_currentSongTracked) {
+        if (_accumulatedListenTime > 0) {
+          service.trackIncrementalListenTime(song, _accumulatedListenTime);
+          _accumulatedListenTime = 0;
+        }
+        return;
+      }
       service.trackSkip(song, secondsPlayed: _position.inSeconds);
       _currentSongTracked = true;
     } else if (_currentSongValidated) {
-      if (_currentSongTracked) return;
+      if (_currentSongTracked) {
+        if (_accumulatedListenTime > 0) {
+          service.trackIncrementalListenTime(song, _accumulatedListenTime);
+          _accumulatedListenTime = 0;
+        }
+        return;
+      }
       service.trackSongPlay(
         song,
         durationPlayed: _position.inSeconds,
         completed: false,
       );
       _currentSongTracked = true;
+      _lastSecondsTracked = _position.inSeconds;
+      _accumulatedListenTime = 0;
     }
   }
 

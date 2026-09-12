@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crypto/crypto.dart';
 import '../models/models.dart';
+import 'library_database_service.dart';
 
 abstract class _W {
   static const double artistAffinity = 0.28;
@@ -67,6 +68,13 @@ class RecommendationService extends ChangeNotifier {
   bool get enabled => _enabled;
   Map<String, SongProfile> get profiles => Map.unmodifiable(_profiles);
   List<String> get recentlyPlayed => List.unmodifiable(_recentlyPlayed);
+
+  final _playbackEventController = StreamController<PlaybackEvent>.broadcast();
+  Stream<PlaybackEvent> get playbackEvents => _playbackEventController.stream;
+  LibraryDatabaseService _dbService = LibraryDatabaseService();
+
+  @visibleForTesting
+  set dbService(LibraryDatabaseService service) => _dbService = service;
 
   Future<void> initialize({String? serverUrl, String? username}) async {
     _prefs = await SharedPreferences.getInstance();
@@ -132,6 +140,7 @@ class RecommendationService extends ChangeNotifier {
   @override
   void dispose() {
     _saveTimer?.cancel();
+    _playbackEventController.close();
     super.dispose();
   }
 
@@ -156,22 +165,22 @@ class RecommendationService extends ChangeNotifier {
   }) async {
     final id = song.id;
     final hour = DateTime.now().hour;
+    final now = DateTime.now();
 
-    _profiles
-        .putIfAbsent(
-          id,
-          () => SongProfile(
-            songId: id,
-            title: song.title,
-            artist: song.artist,
-            artistId: song.artistId,
-            albumId: song.albumId,
-            genre: song.genre,
-            duration: song.duration,
-          ),
-        )
-        .addPlay(
-            durationPlayed: durationPlayed, completed: completed, hour: hour);
+    final profile = _profiles.putIfAbsent(
+      id,
+      () => SongProfile(
+        songId: id,
+        title: song.title,
+        artist: song.artist,
+        artistId: song.artistId,
+        albumId: song.albumId,
+        genre: song.genre,
+        duration: song.duration,
+      ),
+    );
+    profile.addPlay(
+        durationPlayed: durationPlayed, completed: completed, hour: hour);
 
     _recentlyPlayed.remove(id);
     _recentlyPlayed.insert(0, id);
@@ -179,6 +188,39 @@ class RecommendationService extends ChangeNotifier {
       _recentlyPlayed = _recentlyPlayed.sublist(0, 500);
     }
     _rebuildRecentIndex();
+
+    final timestampStr = now.toIso8601String();
+    _playbackEventController.add(PlaybackEvent(
+      songId: id,
+      timestamp: now,
+      eventType: 'play_validated',
+      duration: durationPlayed,
+      completed: completed,
+    ));
+    _dbService.insertListeningEvent(
+      songId: id,
+      eventType: 'play_validated',
+      durationSeconds: durationPlayed,
+      completed: completed ? 1 : 0,
+      timestamp: timestampStr,
+    );
+
+    if (completed) {
+      _playbackEventController.add(PlaybackEvent(
+        songId: id,
+        timestamp: now,
+        eventType: 'completed',
+        duration: durationPlayed,
+        completed: true,
+      ));
+      _dbService.insertListeningEvent(
+        songId: id,
+        eventType: 'completed',
+        durationSeconds: durationPlayed,
+        completed: 1,
+        timestamp: timestampStr,
+      );
+    }
 
     if (_enabled) {
       final lw = _listenWeight(song, durationPlayed, completed: completed);
@@ -212,7 +254,7 @@ class RecommendationService extends ChangeNotifier {
 
   /// Updates the status of the most recently tracked play to 'completed'.
   /// Used to apply the completion bonus after the initial 30s validation.
-  Future<void> trackSongCompletion(Song song) async {
+  Future<void> trackSongCompletion(Song song, {int durationPlayed = 0}) async {
     final id = song.id;
     final profile = _profiles[id];
     if (profile == null) return;
@@ -221,11 +263,26 @@ class RecommendationService extends ChangeNotifier {
     if (_recentlyPlayed.isEmpty || _recentlyPlayed.first != id) return;
     
     // Check if we already registered this as completed to avoid double counting
-    // completionRate is calculated as completedPlays / playCount.
-    // If we just added a play (playCount++) and completedPlays hasn't caught up:
     if (profile.completedPlays < profile.playCount) {
       profile.completedPlays++;
       
+      final now = DateTime.now();
+      final timestampStr = now.toIso8601String();
+      _playbackEventController.add(PlaybackEvent(
+        songId: id,
+        timestamp: now,
+        eventType: 'completed',
+        duration: durationPlayed,
+        completed: true,
+      ));
+      _dbService.insertListeningEvent(
+        songId: id,
+        eventType: 'completed',
+        durationSeconds: durationPlayed,
+        completed: 1,
+        timestamp: timestampStr,
+      );
+
       if (_enabled) {
         // Apply the difference between a partial listen and a completed listen
         // Max weight is 1.5, partial (ratio > 0.8) is 1.3. 
@@ -249,10 +306,37 @@ class RecommendationService extends ChangeNotifier {
     }
   }
 
+  Future<void> trackIncrementalListenTime(Song song, int additionalSeconds) async {
+    final id = song.id;
+    final profile = _profiles[id];
+    if (profile != null && additionalSeconds > 0) {
+      profile.totalListenTime += additionalSeconds;
+      _scheduleSave();
+      notifyListeners();
+    }
+  }
+
   Future<void> trackSkip(Song song, {int secondsPlayed = 0}) async {
     final id = song.id;
     _skipCounts[id] = (_skipCounts[id] ?? 0) + 1;
     _profiles[id]?.skipCount++;
+
+    final now = DateTime.now();
+    final timestampStr = now.toIso8601String();
+    _playbackEventController.add(PlaybackEvent(
+      songId: id,
+      timestamp: now,
+      eventType: 'skipped',
+      duration: secondsPlayed,
+      completed: false,
+    ));
+    _dbService.insertListeningEvent(
+      songId: id,
+      eventType: 'skipped',
+      durationSeconds: secondsPlayed,
+      completed: 0,
+      timestamp: timestampStr,
+    );
 
     if (_enabled) {
       final earlyFactor = song.duration != null && song.duration! > 0
@@ -913,6 +997,7 @@ class SongProfile {
   int? userRating;
   Map<int, int> hourlyPlays = {};
   late DateTime lastPlayed;
+  DateTime? firstPlayed;
 
   SongProfile({
     required this.songId,
@@ -923,6 +1008,7 @@ class SongProfile {
     this.genre,
     this.duration,
     DateTime? lastPlayed,
+    this.firstPlayed,
   }) : lastPlayed = lastPlayed ?? DateTime.fromMillisecondsSinceEpoch(0);
 
   double get completionRate =>
@@ -948,6 +1034,7 @@ class SongProfile {
     if (completed) completedPlays++;
     if (hour != null) hourlyPlays[hour] = (hourlyPlays[hour] ?? 0) + 1;
     lastPlayed = DateTime.now();
+    firstPlayed ??= DateTime.now();
   }
 
   Map<String, dynamic> toJson() => {
@@ -965,6 +1052,7 @@ class SongProfile {
         'userRating': userRating,
         'hourlyPlays': hourlyPlays.map((k, v) => MapEntry(k.toString(), v)),
         'lastPlayed': lastPlayed.millisecondsSinceEpoch,
+        'firstPlayed': firstPlayed?.millisecondsSinceEpoch,
       };
 
   factory SongProfile.fromJson(Map<String, dynamic> json) => SongProfile(
@@ -978,6 +1066,9 @@ class SongProfile {
         lastPlayed: json['lastPlayed'] != null
             ? DateTime.fromMillisecondsSinceEpoch(json['lastPlayed'] as int)
             : null,
+        firstPlayed: json['firstPlayed'] != null
+            ? DateTime.fromMillisecondsSinceEpoch(json['firstPlayed'] as int)
+            : null,
       )
         ..playCount = json['playCount'] as int? ?? 0
         ..skipCount = json['skipCount'] as int? ?? 0
@@ -987,4 +1078,20 @@ class SongProfile {
         ..hourlyPlays = (json['hourlyPlays'] as Map<String, dynamic>?)
                 ?.map((k, v) => MapEntry(int.parse(k), v as int)) ??
             {};
+}
+
+class PlaybackEvent {
+  final String songId;
+  final DateTime timestamp;
+  final String eventType; // play_validated, completed, skipped
+  final int duration;
+  final bool completed;
+
+  PlaybackEvent({
+    required this.songId,
+    required this.timestamp,
+    required this.eventType,
+    required this.duration,
+    required this.completed,
+  });
 }
