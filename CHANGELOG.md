@@ -5,6 +5,12 @@ All notable changes to JB Audio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.2] - 2026-09-12
+
+### 🎛️ Audio
+* Correction de l'accès à l'égaliseur sur les appareils Android utilisant le moteur DynamicsProcessing (Android API 28+).
+* L'interface de l'égaliseur reconnaît désormais correctement le nouveau moteur et affiche fidèlement ses 5 bandes de fréquences.
+
 ## [2.1.1] - 2026-09-12
 
 ### 🎛️ Audio

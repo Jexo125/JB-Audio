@@ -29,6 +29,7 @@ class EqualizerService extends ChangeNotifier {
   List<double> get customGains => _customGains;
   double get manualPreamp => _manualPreamp;
   bool get useDynamics => _useDynamics;
+  bool get isSupported => _useDynamics || _equalizer != null;
 
   AndroidEqualizer? get equalizer => _equalizer;
 

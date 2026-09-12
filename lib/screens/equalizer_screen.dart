@@ -31,7 +31,7 @@ class EqualizerScreen extends StatelessWidget {
           const SizedBox(width: 8),
         ],
       ),
-      body: equalizerService.equalizer == null
+      body: !equalizerService.isSupported
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(32.0),
@@ -160,7 +160,35 @@ class EqualizerScreen extends StatelessWidget {
     }
   }
 
+  Widget _buildDynamicsBands(BuildContext context, EqualizerService service) {
+    const displayBandCount = 5;
+    const frequencies = [100.0, 300.0, 1000.0, 4000.0, 20000.0];
+
+    return Container(
+      height: 300,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: List.generate(displayBandCount, (index) {
+          return _BandSlider(
+            index: index,
+            freq: frequencies[index],
+            min: -12.0,
+            max: 12.0,
+            value: service.getBandUserGain(index, displayBandCount),
+            onChanged: (val) => service.setBandGain(index, val),
+            enabled: service.enabled,
+          );
+        }),
+      ),
+    );
+  }
+
   Widget _buildEqualizerBands(BuildContext context, EqualizerService service) {
+    if (service.useDynamics) {
+      return _buildDynamicsBands(context, service);
+    }
+
     return FutureBuilder(
       future: service.equalizer?.parameters,
       builder: (context, snapshot) {
