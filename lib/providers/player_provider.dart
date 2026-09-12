@@ -732,6 +732,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
     try {
       final session = await AudioSession.instance;
       await session.configure(const AudioSessionConfiguration.music());
+      await session.setActive(true);
 
       _volume = _audioPlayer.volume;
 

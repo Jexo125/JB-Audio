@@ -5,6 +5,12 @@ All notable changes to JB Audio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.4] - 2026-09-12
+
+### 🎛️ Audio
+* Correction de l’activation explicite de la session audio Android.
+* Amélioration de la compatibilité audio avec certains appareils Android.
+
 ## [2.1.3] - 2026-09-12
 
 ### 🎛️ Audio
