@@ -5,6 +5,15 @@ All notable changes to JB Audio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.3] - 2026-09-12
+
+### 🎛️ Audio
+* Correction de l'égaliseur personnalisé sur Android avec DynamicsProcessing.
+* Initialisation paresseuse (lazy) de DynamicsProcessing uniquement lorsque l'égaliseur est activé.
+* Libération de l'effet audio lorsque l'égaliseur est désactivé pour éviter les conflits matériels.
+* Conservation et restauration des réglages de l'égaliseur lors des changements de session audio.
+* Fallback sécurisé permettant de poursuivre la lecture sans égaliseur si DynamicsProcessing ne peut pas être initialisé.
+
 ## [2.1.2] - 2026-09-12
 
 ### 🎛️ Audio

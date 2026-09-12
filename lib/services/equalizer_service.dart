@@ -76,17 +76,19 @@ class EqualizerService extends ChangeNotifier {
       
       final customGainsJson = prefs.getString(_keyCustomGains);
       
-      if (_equalizer != null) {
-        // We need to wait for parameters to be available to know the number of bands
-        final params = await _equalizer!.parameters;
-        
-        if (customGainsJson != null) {
-          final decoded = jsonDecode(customGainsJson);
-          if (decoded is List) {
-            _customGains = List<double>.from(decoded.map((e) => (e as num).toDouble()));
-          }
+      if (customGainsJson != null) {
+        final decoded = jsonDecode(customGainsJson);
+        if (decoded is List) {
+          _customGains = List<double>.from(decoded.map((e) => (e as num).toDouble()));
         }
-        
+      }
+
+      if (_useDynamics) {
+        if (_customGains.length != 5) {
+          _customGains = List.filled(5, 0.0);
+        }
+      } else if (_equalizer != null) {
+        final params = await _equalizer!.parameters;
         if (_customGains.length != params.bands.length) {
           _customGains = List.filled(params.bands.length, 0.0);
         }
@@ -119,11 +121,10 @@ class EqualizerService extends ChangeNotifier {
   }
 
   Future<void> setBandGain(int index, double gain) async {
-    if (_equalizer == null) return;
+    final int bandCount = _useDynamics ? 5 : (await _equalizer?.parameters)?.bands.length ?? 0;
     
-    final params = await _equalizer!.parameters;
-    if (_customGains.length != params.bands.length) {
-      _customGains = List.filled(params.bands.length, 0.0);
+    if (_customGains.length != bandCount) {
+      _customGains = List.filled(bandCount, 0.0);
     }
     
     if (index >= 0 && index < _customGains.length) {
@@ -154,10 +155,9 @@ class EqualizerService extends ChangeNotifier {
   Future<void> reset() async {
     _currentPreset = 'Flat';
     _manualPreamp = 0.0;
-    if (_equalizer != null) {
-      final params = await _equalizer!.parameters;
-      _customGains = List.filled(params.bands.length, 0.0);
-    }
+    
+    final int bandCount = _useDynamics ? 5 : (await _equalizer?.parameters)?.bands.length ?? 0;
+    _customGains = List.filled(bandCount, 0.0);
     
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyEnabled, false);

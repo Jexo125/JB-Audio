@@ -8,13 +8,13 @@ La version 2.0 apporte une refonte profonde des performances réseau, une gestio
 
 ---
 
-## 🚀 Nouveautés de la Version 2.1.1
+## 🚀 Nouveautés de la Version 2.1.3
 
 ### 🎚️ Égaliseur Audio & Stabilité
-- **Exclusion Mutuelle** : Optimisation de l'architecture audio pour éviter tout conflit entre les moteurs d'égalisation (DynamicsProcessing vs Legacy).
-- **Puissance Sonore** : Utilisation exclusive du moteur `DynamicsProcessing` sur Android 9+ pour un boost de fréquences profond et musical.
-- **Fiabilité** : Maintien automatique du moteur classique pour les appareils plus anciens (Android < 9).
-- **Préampli Global** : Contrôle indépendant du gain global (-12 dB à +12 dB) avec une précision de 0,5 dB.
+- **Égaliseur Personnalisé** : Correction du réglage manuel des bandes en mode DynamicsProcessing.
+- **Gestion Énergétique** : Initialisation et libération dynamiques de l'effet pour une meilleure stabilité système.
+- **Restauration d'État** : Vos réglages sont désormais fidèlement conservés lors du changement de morceau ou de session.
+- **Sécurité Audio** : Système de secours garantissant la continuité de la lecture en cas d'erreur du moteur natif.
 
 ---
 

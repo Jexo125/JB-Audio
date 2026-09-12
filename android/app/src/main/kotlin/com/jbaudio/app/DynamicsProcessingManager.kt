@@ -7,6 +7,10 @@ class DynamicsProcessingManager {
     private var dynamicsProcessing: DynamicsProcessing? = null
     private var isEnabled = false
     private var currentSessionId: Int = -1
+    
+    // State storage to restore when effect is recreated
+    private var currentPreampGain: Float = 0f
+    private var currentBandGains: FloatArray = FloatArray(5) { 0f }
 
     companion object {
         private const val TAG = "DynamicsManager"
@@ -23,12 +27,34 @@ class DynamicsProcessingManager {
     }
 
     fun initialize(sessionId: Int) {
+        if (sessionId <= 0) {
+            Log.w(TAG, "Invalid session ID: $sessionId")
+            return
+        }
+        
         if (currentSessionId == sessionId && dynamicsProcessing != null) return
 
-        Log.d(TAG, "Initializing DynamicsProcessing for session $sessionId")
-        release()
+        Log.d(TAG, "Updating sessionId to $sessionId")
+        val wasEnabled = isEnabled
+        
+        // If session changed, we must recreate the effect
+        if (currentSessionId != sessionId) {
+            release()
+            currentSessionId = sessionId
+        }
+        
+        // Only create the effect if it should be enabled
+        // This is the safest way to ensure NO sound interference when OFF
+        if (wasEnabled) {
+            createEffect()
+        }
+    }
+
+    private fun createEffect() {
+        if (dynamicsProcessing != null || currentSessionId <= 0) return
         
         try {
+            Log.d(TAG, "Creating DynamicsProcessing for session $currentSessionId")
             val builder = DynamicsProcessing.Config.Builder(
                 DynamicsProcessing.VARIANT_FAVOR_FREQUENCY_RESOLUTION,
                 CHANNEL_COUNT,
@@ -38,10 +64,11 @@ class DynamicsProcessingManager {
                 true                           // Limiter
             )
 
-            // Setup Pre-EQ stage (applied to all channels for consistency)
+            // Setup Pre-EQ stage
             val preEq = DynamicsProcessing.Eq(true, true, CUTOFF_FREQUENCIES.size)
             for (b in CUTOFF_FREQUENCIES.indices) {
-                val eqBand = DynamicsProcessing.EqBand(true, CUTOFF_FREQUENCIES[b], 0f)
+                // Initialize with stored gains
+                val eqBand = DynamicsProcessing.EqBand(true, CUTOFF_FREQUENCIES[b], currentBandGains[b])
                 preEq.setBand(b, eqBand)
             }
             builder.setPreEqAllChannelsTo(preEq)
@@ -58,32 +85,52 @@ class DynamicsProcessingManager {
                 0f     // postGain (dB)
             )
             builder.setLimiterAllChannelsTo(limiter)
-            builder.setInputGainAllChannelsTo(0f)
+            builder.setInputGainAllChannelsTo(currentPreampGain)
 
-            dynamicsProcessing = DynamicsProcessing(0, sessionId, builder.build())
-            dynamicsProcessing?.enabled = isEnabled
-            currentSessionId = sessionId
+            dynamicsProcessing = DynamicsProcessing(0, currentSessionId, builder.build())
+            dynamicsProcessing?.enabled = true
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to create DynamicsProcessing", e)
+            Log.e(TAG, "Failed to create DynamicsProcessing effect", e)
+            dynamicsProcessing = null
         }
     }
 
     fun setEnabled(enabled: Boolean) {
+        if (isEnabled == enabled && (enabled == (dynamicsProcessing != null))) return
+        
         isEnabled = enabled
-        dynamicsProcessing?.enabled = enabled
+        if (enabled) {
+            if (dynamicsProcessing == null) {
+                createEffect()
+            } else {
+                dynamicsProcessing?.enabled = true
+            }
+        } else {
+            // Completely release the effect when disabled
+            // This guarantees no audio session blocking on buggy drivers (Samsung)
+            releaseEffectOnly()
+        }
     }
 
     fun setPreamp(gain: Float) {
+        currentPreampGain = gain
         dynamicsProcessing?.let { dp ->
             try {
                 dp.setInputGainAllChannelsTo(gain)
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to set input gain", e)
+                Log.e(TAG, "Failed to update input gain", e)
             }
         }
     }
 
     fun setBandGains(gains: FloatArray) {
+        // Store the gains
+        for (i in gains.indices) {
+            if (i < currentBandGains.size) {
+                currentBandGains[i] = gains[i]
+            }
+        }
+        
         dynamicsProcessing?.let { dp ->
             try {
                 for (b in gains.indices) {
@@ -93,20 +140,34 @@ class DynamicsProcessingManager {
                     }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to set band gains", e)
+                Log.e(TAG, "Failed to update band gains", e)
             }
         }
     }
 
     fun reset() {
-        setPreamp(0f)
-        val flatGains = FloatArray(CUTOFF_FREQUENCIES.size) { 0f }
-        setBandGains(flatGains)
+        currentPreampGain = 0f
+        currentBandGains = FloatArray(CUTOFF_FREQUENCIES.size) { 0f }
+        
+        if (dynamicsProcessing != null) {
+            setPreamp(0f)
+            setBandGains(currentBandGains)
+        }
+    }
+
+    private fun releaseEffectOnly() {
+        try {
+            dynamicsProcessing?.enabled = false
+            dynamicsProcessing?.release()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error releasing effect", e)
+        } finally {
+            dynamicsProcessing = null
+        }
     }
 
     fun release() {
-        dynamicsProcessing?.release()
-        dynamicsProcessing = null
+        releaseEffectOnly()
         currentSessionId = -1
     }
 }
