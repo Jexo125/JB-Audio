@@ -210,7 +210,16 @@ void main() async {
 
   // Initialise the audio service BEFORE runApp so the background audio engine
   // is ready and fully decoupled from the Flutter widget lifecycle on iOS.
-  final audioHandler = await initAudioService();
+  int apiLevel = 0;
+  if (!kIsWeb && Platform.isAndroid) {
+    try {
+      const channel = MethodChannel('com.devid.musly/dynamics');
+      apiLevel = await channel.invokeMethod<int>('getApiLevel') ?? 0;
+    } catch (e) {
+      debugPrint('Failed to get API level for audio handler: $e');
+    }
+  }
+  final audioHandler = await initAudioService(apiLevel: apiLevel);
 
   // Create TranscodingService instance to share across providers
   final transcodingService = TranscodingService();

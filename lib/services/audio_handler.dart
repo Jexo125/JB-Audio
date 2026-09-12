@@ -36,27 +36,44 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   // interruptions there).
   static bool get _ownsFocusNatively => !kIsWeb && Platform.isAndroid;
 
-  static final _equalizer = !kIsWeb && Platform.isAndroid ? AndroidEqualizer() : null;
+  final AndroidEqualizer? _equalizer;
+  final AudioPlayer _player;
 
-  final AudioPlayer _player = AudioPlayer(
-    audioPipeline: AudioPipeline(
-      androidAudioEffects: [
-        if (_equalizer != null) _equalizer!,
-      ],
-    ),
-    handleAudioSessionActivation: !_ownsFocusNatively,
-    handleInterruptions: !_ownsFocusNatively,
-    audioLoadConfiguration: AudioLoadConfiguration(
-      androidLoadControl: AndroidLoadControl(
-        minBufferDuration: const Duration(seconds: 30),
-        maxBufferDuration: const Duration(seconds: 60),
-        bufferForPlaybackDuration: const Duration(milliseconds: 1500),
-        prioritizeTimeOverSizeThresholds: true,
-        targetBufferBytes: 3 * 1024 * 1024,
-      ),
-    ),
-  );
   static const _pitchChannel = MethodChannel('com.devid.musly/pitch');
+
+  MuslyAudioHandler({int apiLevel = 0}) : this._internal(_createEqualizer(apiLevel));
+
+  static AndroidEqualizer? _createEqualizer(int apiLevel) {
+    if (!kIsWeb && Platform.isAndroid && apiLevel > 0 && apiLevel < 28) {
+      return AndroidEqualizer();
+    }
+    return null;
+  }
+
+  MuslyAudioHandler._internal(this._equalizer)
+      : _player = AudioPlayer(
+          audioPipeline: AudioPipeline(
+            androidAudioEffects: [
+              if (_equalizer != null) _equalizer,
+            ],
+          ),
+          handleAudioSessionActivation: !_ownsFocusNatively,
+          handleInterruptions: !_ownsFocusNatively,
+          audioLoadConfiguration: AudioLoadConfiguration(
+            androidLoadControl: AndroidLoadControl(
+              minBufferDuration: const Duration(seconds: 30),
+              maxBufferDuration: const Duration(seconds: 60),
+              bufferForPlaybackDuration: const Duration(milliseconds: 1500),
+              prioritizeTimeOverSizeThresholds: true,
+              targetBufferBytes: 3 * 1024 * 1024,
+            ),
+          ),
+        ) {
+    // Forward just_audio playback events → audio_service playback state.
+    // This drives the iOS Control Center / lock screen widget and the
+    // Android media notification automatically.
+    _player.playbackEventStream.map(_buildPlaybackState).pipe(playbackState);
+  }
 
   // ---------------------------------------------------------------------------
   // Android Auto browse tree media IDs.
@@ -75,6 +92,7 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   AudioPlayer get player => _player;
 
   /// Exposed so [EqualizerService] can access the equalizer instance.
+  /// This will be null on Android API 28+ to ensure only DynamicsProcessing is used.
   AndroidEqualizer? get equalizer => _equalizer;
 
   // ---------------------------------------------------------------------------
@@ -125,13 +143,6 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
   int _remoteVolume = 50;
   static const _remoteMaxVolume = 100;
   static const _remoteVolumeStep = 5;
-
-  MuslyAudioHandler() {
-    // Forward just_audio playback events → audio_service playback state.
-    // This drives the iOS Control Center / lock screen widget and the
-    // Android media notification automatically.
-    _player.playbackEventStream.map(_buildPlaybackState).pipe(playbackState);
-  }
 
   // ---------------------------------------------------------------------------
   // audio_service protocol — called by the system (lock screen, headphones …)
@@ -565,10 +576,10 @@ class MuslyAudioHandler extends BaseAudioHandler with SeekHandler {
 /// main(), and this handler serves the browse tree, search and playback.
 /// On desktop/web the handler is created directly (audio_service has no
 /// backend there).
-Future<MuslyAudioHandler> initAudioService() async {
+Future<MuslyAudioHandler> initAudioService({int apiLevel = 0}) async {
   if (!kIsWeb && (Platform.isIOS || Platform.isAndroid || Platform.isMacOS)) {
     return AudioService.init(
-      builder: () => MuslyAudioHandler(),
+      builder: () => MuslyAudioHandler(apiLevel: apiLevel),
       config: const AudioServiceConfig(
         androidNotificationChannelId: 'com.devid.musly.channel.audio',
         androidNotificationChannelName: 'Musly',

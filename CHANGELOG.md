@@ -5,6 +5,13 @@ All notable changes to JB Audio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2026-09-12
+
+### 🎛️ Audio
+* Optimisation de l'architecture audio pour garantir l'exclusion mutuelle entre les moteurs d'égalisation.
+* Sur Android 9+ (API 28+), seul le moteur DynamicsProcessing est désormais utilisé pour une stabilité maximale.
+* Maintien du moteur AndroidEqualizer comme solution de secours (fallback) sur les versions antérieures d'Android.
+
 ## [2.1.0] - 2026-09-07
 
 ### 🎛️ Audio

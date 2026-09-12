@@ -8,14 +8,13 @@ La version 2.0 apporte une refonte profonde des performances réseau, une gestio
 
 ---
 
-## 🚀 Nouveautés de la Version 2.1.0
+## 🚀 Nouveautés de la Version 2.1.1
 
-### 🎚️ Égaliseur Audio & Préampli (DynamicsProcessing)
-- **Puissance Sonore** : Migration vers une architecture native `DynamicsProcessing` offrant des boosts de fréquences nettement plus perceptibles et musicaux.
-- **Préampli Global** : Nouveau curseur de gain global (-12 dB à +12 dB) indépendant des bandes de l'égaliseur.
-- **Précision** : Réglage ultra-fin par pas de 0,5 dB pour une signature sonore sur mesure.
-- **Sécurité & Transparence** : Limitation de niveau intégrée pour éviter le clipping et bypass physique réel de l'effet en mode neutre.
-- **Compatibilité** : Maintien du moteur classique pour les appareils plus anciens (Android < 9).
+### 🎚️ Égaliseur Audio & Stabilité
+- **Exclusion Mutuelle** : Optimisation de l'architecture audio pour éviter tout conflit entre les moteurs d'égalisation (DynamicsProcessing vs Legacy).
+- **Puissance Sonore** : Utilisation exclusive du moteur `DynamicsProcessing` sur Android 9+ pour un boost de fréquences profond et musical.
+- **Fiabilité** : Maintien automatique du moteur classique pour les appareils plus anciens (Android < 9).
+- **Préampli Global** : Contrôle indépendant du gain global (-12 dB à +12 dB) avec une précision de 0,5 dB.
 
 ---
 
