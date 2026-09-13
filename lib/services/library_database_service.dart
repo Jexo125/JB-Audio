@@ -14,7 +14,7 @@ import '../models/models.dart';
 /// millions of rows can be written without spikes in memory usage.
 class LibraryDatabaseService {
   static const String _dbName = 'musly_library.db';
-  static const int _dbVersion = 4; // bumped from 3 for quest_instances
+  static const int _dbVersion = 6; // bumped from 5 for unique titles
   static const int _batchSize = 1000;
 
   Database? _db;
@@ -82,6 +82,42 @@ class LibraryDatabaseService {
             'CREATE INDEX IF NOT EXISTS idx_quest_status ON quest_instances(status)');
         await db.execute(
             'CREATE INDEX IF NOT EXISTS idx_quest_period ON quest_instances(period_start, period_end)');
+      } catch (_) {}
+    }
+    if (oldVersion < 5) {
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS user_progression (
+            id INTEGER PRIMARY KEY,
+            total_xp INTEGER NOT NULL DEFAULT 0,
+            pending_seconds INTEGER NOT NULL DEFAULT 0
+          )
+        ''');
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS xp_transactions (
+            source_type TEXT NOT NULL,
+            source_id TEXT NOT NULL,
+            xp_amount INTEGER NOT NULL,
+            timestamp TEXT NOT NULL,
+            PRIMARY KEY (source_type, source_id)
+          )
+        ''');
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS unlocked_titles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title_key TEXT NOT NULL,
+            unlocked_at TEXT NOT NULL
+          )
+        ''');
+        // Initialize single progression row if it doesn't exist
+        await db.insert('user_progression', {'id': 1, 'total_xp': 0, 'pending_seconds': 0},
+            conflictAlgorithm: ConflictAlgorithm.ignore);
+      } catch (_) {}
+    }
+    if (oldVersion < 6) {
+      try {
+        await db.execute(
+            'CREATE UNIQUE INDEX IF NOT EXISTS idx_unlocked_titles_key ON unlocked_titles(title_key)');
       } catch (_) {}
     }
   }
@@ -194,6 +230,39 @@ class LibraryDatabaseService {
         'CREATE INDEX IF NOT EXISTS idx_quest_status ON quest_instances(status)');
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_quest_period ON quest_instances(period_start, period_end)');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS user_progression (
+        id INTEGER PRIMARY KEY,
+        total_xp INTEGER NOT NULL DEFAULT 0,
+        pending_seconds INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS xp_transactions (
+        source_type TEXT NOT NULL,
+        source_id TEXT NOT NULL,
+        xp_amount INTEGER NOT NULL,
+        timestamp TEXT NOT NULL,
+        PRIMARY KEY (source_type, source_id)
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS unlocked_titles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title_key TEXT NOT NULL,
+        unlocked_at TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute(
+        'CREATE UNIQUE INDEX IF NOT EXISTS idx_unlocked_titles_key ON unlocked_titles(title_key)');
+
+    // Initialize single progression row
+    await db.insert('user_progression', {'id': 1, 'total_xp': 0, 'pending_seconds': 0},
+        conflictAlgorithm: ConflictAlgorithm.ignore);
   }
 
   // ── Batch inserts ───────────────────────────────────────────────────────
@@ -489,6 +558,97 @@ class LibraryDatabaseService {
   Future<void> deleteQuestInstance(int id) async {
     final db = await database;
     await db.delete('quest_instances', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ── User Progression & XP ───────────────────────────────────────────────
+
+  Future<UserProgression> getUserProgression() async {
+    final db = await database;
+    final maps = await db.query('user_progression', where: 'id = 1');
+    if (maps.isEmpty) {
+      return const UserProgression();
+    }
+    return UserProgression.fromJson(maps.first);
+  }
+
+  Future<void> updateUserProgression(UserProgression progression) async {
+    final db = await database;
+    await db.insert(
+      'user_progression',
+      {'id': 1, ...progression.toJson()},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Atomically credits XP for an event if it hasn't been credited yet.
+  /// Returns true if XP was credited, false if it was already processed.
+  Future<bool> creditEventXp({
+    required String type,
+    required String sourceId,
+    required int amount,
+  }) async {
+    final db = await database;
+    return await db.transaction((txn) async {
+      // 1. Try to insert transaction. PRIMARY KEY (source_type, source_id) ensures idempotence.
+      final result = await txn.insert(
+        'xp_transactions',
+        {
+          'source_type': type,
+          'source_id': sourceId,
+          'xp_amount': amount,
+          'timestamp': DateTime.now().toIso8601String(),
+        },
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+
+      // 2. If result != 0, it means the row was newly inserted (no conflict).
+      if (result != 0) {
+        // 3. Increment total_xp in user_progression
+        await txn.execute(
+          'UPDATE user_progression SET total_xp = total_xp + ? WHERE id = 1',
+          [amount],
+        );
+        return true;
+      }
+      return false;
+    });
+  }
+
+  /// Attempts to insert an XP transaction.
+  /// Returns true if the transaction was newly inserted, false if it already existed (idempotence).
+  Future<bool> insertXpTransaction({
+    required String sourceType,
+    required String sourceId,
+    required int amount,
+    required String timestamp,
+  }) async {
+    final db = await database;
+    // We use ConflictAlgorithm.ignore to handle the composite PK idempotence.
+    // result is the ID of the inserted row or 0 if conflict occurred with ignore.
+    final result = await db.insert(
+      'xp_transactions',
+      {
+        'source_type': sourceType,
+        'source_id': sourceId,
+        'xp_amount': amount,
+        'timestamp': timestamp,
+      },
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+    return result != 0;
+  }
+
+  Future<List<Map<String, dynamic>>> getUnlockedTitles() async {
+    final db = await database;
+    return await db.query('unlocked_titles', orderBy: 'unlocked_at DESC');
+  }
+
+  Future<void> insertUnlockedTitle(String titleKey, String unlockedAt) async {
+    final db = await database;
+    await db.insert('unlocked_titles', {
+      'title_key': titleKey,
+      'unlocked_at': unlockedAt,
+    });
   }
 
   Map<String, dynamic> _questInstanceToMap(MusicQuestInstance instance) {

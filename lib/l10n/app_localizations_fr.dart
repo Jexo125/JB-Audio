@@ -2432,4 +2432,82 @@ class AppLocalizationsFr extends AppLocalizations {
   String questPercentLabel(int percent) {
     return '$percent%';
   }
+
+  @override
+  String get progressionTitle => 'Ma Progression';
+
+  @override
+  String levelLabel(int level) {
+    return 'Niveau $level';
+  }
+
+  @override
+  String xpTotal(int xp) {
+    return '$xp XP au total';
+  }
+
+  @override
+  String xpNextLevel(int xp) {
+    return '$xp XP jusqu\'au prochain niveau';
+  }
+
+  @override
+  String get maxLevelReached => 'Niveau maximum atteint';
+
+  @override
+  String get titlesSection => 'Titres & Milestones';
+
+  @override
+  String unlockedOn(String date) {
+    return 'Débloqué le $date';
+  }
+
+  @override
+  String get lockedTitle => 'Verrouillé';
+
+  @override
+  String levelUpNotification(int level) {
+    return 'Niveau supérieur ! Vous êtes maintenant niveau $level';
+  }
+
+  @override
+  String titleUnlockedNotification(String title) {
+    return 'Nouveau titre débloqué : $title';
+  }
+
+  @override
+  String get titleMelomane => 'Mélomane';
+
+  @override
+  String get titleMelomaneDesc => 'Écouter 10 heures de musique';
+
+  @override
+  String get titleExplorer => 'Explorateur';
+
+  @override
+  String get titleExplorerDesc => 'Écouter 20 artistes différents';
+
+  @override
+  String get titleCollector => 'Collectionneur';
+
+  @override
+  String get titleCollectorDesc => 'Écouter 10 albums différents';
+
+  @override
+  String get titleFinisher => 'Finisseur';
+
+  @override
+  String get titleFinisherDesc => 'Terminer 50 morceaux';
+
+  @override
+  String get titlePioneer => 'Pionnier';
+
+  @override
+  String get titlePioneerDesc => 'Faire 20 découvertes';
+
+  @override
+  String get titleRegular => 'Habitué';
+
+  @override
+  String get titleRegularDesc => '10 jours d\'activité';
 }

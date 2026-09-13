@@ -5,6 +5,15 @@ All notable changes to JB Audio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.5] - 2026-09-13
+
+### ✨ Gamification
+* Introduction du système de progression (XP et Niveaux).
+* Ajout des titres et milestones débloquables ("Mélomane", "Explorateur", etc.).
+* Intégration du Dashboard "Ma Progression" dans la bibliothèque.
+* Notifications en temps réel pour les montées de niveau et déblocages de titres.
+* Persistance atomique des données de progression via SQLite V6.
+
 ## [2.1.4] - 2026-09-12
 
 ### 🎛️ Audio

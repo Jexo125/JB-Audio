@@ -12,3 +12,5 @@ export 'server_config.dart';
 export 'song.dart';
 export 'recommended_album.dart';
 export 'quest.dart';
+export 'progression.dart';
+export 'title.dart';

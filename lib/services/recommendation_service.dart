@@ -179,6 +179,7 @@ class RecommendationService extends ChangeNotifier {
         duration: song.duration,
       ),
     );
+    final isDiscovery = profile.firstPlayed == null;
     profile.addPlay(
         durationPlayed: durationPlayed, completed: completed, hour: hour);
 
@@ -196,6 +197,7 @@ class RecommendationService extends ChangeNotifier {
       eventType: 'play_validated',
       duration: durationPlayed,
       completed: completed,
+      isDiscovery: isDiscovery,
     ));
     _playbackEventController.add(PlaybackEvent(
       songId: id,
@@ -1163,6 +1165,7 @@ class PlaybackEvent {
   final String eventType; // play_validated, completed, skipped, time_added
   final int duration;
   final bool completed;
+  final bool isDiscovery;
 
   PlaybackEvent({
     required this.songId,
@@ -1170,5 +1173,6 @@ class PlaybackEvent {
     required this.eventType,
     required this.duration,
     required this.completed,
+    this.isDiscovery = false,
   });
 }

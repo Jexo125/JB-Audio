@@ -21,6 +21,7 @@ import 'all_songs_screen.dart';
 import 'downloads_screen.dart';
 import 'statistics_screen.dart';
 import 'music_quests_screen.dart';
+import 'progression_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../services/offline_service.dart';
 import '../utils/genre_translator.dart';
@@ -282,6 +283,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     title: l10n.quests,
                     subtitle: l10n.musicalQuests,
                     onTap: () => _navigate(context, const MusicQuestsScreen()),
+                  ),
+                  CategoryCard(
+                    icon: CupertinoIcons.sparkles,
+                    colors: [Colors.orange, Colors.deepOrange],
+                    title: l10n.progressionTitle,
+                    subtitle: l10n.titlesSection,
+                    onTap: () => _navigate(context, const ProgressionScreen()),
                   ),
                 ]),
               ),

@@ -16,6 +16,7 @@ import 'services/local_music_service.dart';
 import 'services/analytics_service.dart';
 import 'services/favorite_playlists_service.dart';
 import 'widgets/privacy_policy_dialog.dart';
+import 'widgets/progression_listener.dart';
 import 'providers/providers.dart';
 import 'screens/screens.dart';
 import 'screens/library_sync_screen.dart';
@@ -264,10 +265,21 @@ void main() async {
     statisticsService,
   );
 
+  final xpService = XpService(
+    libraryDatabaseService,
+    recommendationService,
+    musicQuestService,
+    statisticsService,
+  );
+
   // Initialize MusicQuestService (async but not awaited to avoid blocking main app start,
   // the service handles its own loading state and lifecycle)
   unawaited(musicQuestService.initialize().catchError((e) {
     debugPrint('Failed to initialize MusicQuestService: $e');
+  }));
+
+  unawaited(xpService.initialize().catchError((e) {
+    debugPrint('Failed to initialize XpService: $e');
   }));
 
   final Widget appWithProviders = MultiProvider(
@@ -278,6 +290,9 @@ void main() async {
       Provider<StatisticsService>.value(value: statisticsService),
       Provider<MusicQuestService>.value(
         value: musicQuestService,
+      ),
+      ChangeNotifierProvider<XpService>.value(
+        value: xpService,
       ),
       ChangeNotifierProvider<RecommendationService>.value(
         value: recommendationService,
@@ -298,7 +313,7 @@ void main() async {
       ChangeNotifierProvider<PlayerProvider>.value(value: playerProvider),
       ChangeNotifierProvider<LibraryProvider>.value(value: libraryProvider),
     ],
-    child: MuslyApp(musicQuestService: musicQuestService),
+    child: MuslyApp(musicQuestService: musicQuestService, xpService: xpService),
   );
 
   runApp(appWithProviders);
@@ -306,7 +321,8 @@ void main() async {
 
 class MuslyApp extends StatefulWidget {
   final MusicQuestService musicQuestService;
-  const MuslyApp({super.key, required this.musicQuestService});
+  final XpService xpService;
+  const MuslyApp({super.key, required this.musicQuestService, required this.xpService});
 
   @override
   State<MuslyApp> createState() => _MuslyAppState();
@@ -316,6 +332,7 @@ class _MuslyAppState extends State<MuslyApp> {
   @override
   void dispose() {
     widget.musicQuestService.dispose();
+    widget.xpService.dispose();
     super.dispose();
   }
 
@@ -359,7 +376,7 @@ class _MuslyAppState extends State<MuslyApp> {
           locale: localeService.currentLocale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const AuthWrapper(),
+          home: const ProgressionListener(child: AuthWrapper()),
           navigatorObservers: [AnalyticsNavigatorObserver()],
         );
       },

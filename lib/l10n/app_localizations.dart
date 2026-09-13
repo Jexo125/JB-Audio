@@ -4497,6 +4497,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{percent}%'**
   String questPercentLabel(int percent);
+
+  /// No description provided for @progressionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My Progression'**
+  String get progressionTitle;
+
+  /// No description provided for @levelLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Level {level}'**
+  String levelLabel(int level);
+
+  /// No description provided for @xpTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'{xp} XP total'**
+  String xpTotal(int xp);
+
+  /// No description provided for @xpNextLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'{xp} XP until next level'**
+  String xpNextLevel(int xp);
+
+  /// No description provided for @maxLevelReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum level reached'**
+  String get maxLevelReached;
+
+  /// No description provided for @titlesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Titles & Milestones'**
+  String get titlesSection;
+
+  /// No description provided for @unlockedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocked on {date}'**
+  String unlockedOn(String date);
+
+  /// No description provided for @lockedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get lockedTitle;
+
+  /// No description provided for @levelUpNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Level up! You are now level {level}'**
+  String levelUpNotification(int level);
+
+  /// No description provided for @titleUnlockedNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'New title unlocked: {title}'**
+  String titleUnlockedNotification(String title);
+
+  /// No description provided for @titleMelomane.
+  ///
+  /// In en, this message translates to:
+  /// **'Melomaniac'**
+  String get titleMelomane;
+
+  /// No description provided for @titleMelomaneDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen to 10 hours of music'**
+  String get titleMelomaneDesc;
+
+  /// No description provided for @titleExplorer.
+  ///
+  /// In en, this message translates to:
+  /// **'Explorer'**
+  String get titleExplorer;
+
+  /// No description provided for @titleExplorerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen to 20 different artists'**
+  String get titleExplorerDesc;
+
+  /// No description provided for @titleCollector.
+  ///
+  /// In en, this message translates to:
+  /// **'Collector'**
+  String get titleCollector;
+
+  /// No description provided for @titleCollectorDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen to 10 different albums'**
+  String get titleCollectorDesc;
+
+  /// No description provided for @titleFinisher.
+  ///
+  /// In en, this message translates to:
+  /// **'Finisher'**
+  String get titleFinisher;
+
+  /// No description provided for @titleFinisherDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete 50 tracks'**
+  String get titleFinisherDesc;
+
+  /// No description provided for @titlePioneer.
+  ///
+  /// In en, this message translates to:
+  /// **'Pioneer'**
+  String get titlePioneer;
+
+  /// No description provided for @titlePioneerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Make 20 new discoveries'**
+  String get titlePioneerDesc;
+
+  /// No description provided for @titleRegular.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular'**
+  String get titleRegular;
+
+  /// No description provided for @titleRegularDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'10 days of active listening'**
+  String get titleRegularDesc;
 }
 
 class _AppLocalizationsDelegate

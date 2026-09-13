@@ -8,6 +8,17 @@ La version 2.0 apporte une refonte profonde des performances réseau, une gestio
 
 ---
 
+## 🚀 Nouveautés de la Version 2.1.5
+
+### ✨ Gamification & Progression
+- **Système d'XP** : Gagnez de l'expérience en écoutant votre musique et en accomplissant des quêtes.
+- **Niveaux d'Écoute** : Progressez sur 20 niveaux pour marquer votre fidélité musicale.
+- **Titres & Milestones** : Débloquez des titres prestigieux comme *Mélomane*, *Explorateur* ou *Pionnier*.
+- **Dashboard Personnel** : Suivez votre progression détaillée depuis le nouvel onglet dédié.
+- **Notifications Temps Réel** : Recevez des félicitations immédiates lors de vos succès.
+
+---
+
 ## 🚀 Nouveautés de la Version 2.1.3
 
 ### 🎚️ Égaliseur Audio & Stabilité

@@ -2421,5 +2421,57 @@
     "placeholders": {
       "percent": { "type": "int" }
     }
-  }
+  },
+  "progressionTitle": "Ma Progression",
+  "levelLabel": "Niveau {level}",
+  "@levelLabel": {
+    "placeholders": {
+      "level": { "type": "int" }
+    }
+  },
+  "xpTotal": "{xp} XP au total",
+  "@xpTotal": {
+    "placeholders": {
+      "xp": { "type": "int" }
+    }
+  },
+  "xpNextLevel": "{xp} XP jusqu'au prochain niveau",
+  "@xpNextLevel": {
+    "placeholders": {
+      "xp": { "type": "int" }
+    }
+  },
+  "maxLevelReached": "Niveau maximum atteint",
+  "titlesSection": "Titres & Milestones",
+  "unlockedOn": "Débloqué le {date}",
+  "@unlockedOn": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "lockedTitle": "Verrouillé",
+  "levelUpNotification": "Niveau supérieur ! Vous êtes maintenant niveau {level}",
+  "@levelUpNotification": {
+    "placeholders": {
+      "level": { "type": "int" }
+    }
+  },
+  "titleUnlockedNotification": "Nouveau titre débloqué : {title}",
+  "@titleUnlockedNotification": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "titleMelomane": "Mélomane",
+  "titleMelomaneDesc": "Écouter 10 heures de musique",
+  "titleExplorer": "Explorateur",
+  "titleExplorerDesc": "Écouter 20 artistes différents",
+  "titleCollector": "Collectionneur",
+  "titleCollectorDesc": "Écouter 10 albums différents",
+  "titleFinisher": "Finisseur",
+  "titleFinisherDesc": "Terminer 50 morceaux",
+  "titlePioneer": "Pionnier",
+  "titlePioneerDesc": "Faire 20 découvertes",
+  "titleRegular": "Habitué",
+  "titleRegularDesc": "10 jours d'activité"
 }
