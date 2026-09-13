@@ -197,11 +197,28 @@ class RecommendationService extends ChangeNotifier {
       duration: durationPlayed,
       completed: completed,
     ));
+    _playbackEventController.add(PlaybackEvent(
+      songId: id,
+      timestamp: now,
+      eventType: 'time_added',
+      duration: durationPlayed,
+      completed: false,
+    ));
+
+    // Note: 'play_validated' records the action.
+    // We also record 'time_added' for this initial validated block.
     _dbService.insertListeningEvent(
       songId: id,
       eventType: 'play_validated',
       durationSeconds: durationPlayed,
       completed: completed ? 1 : 0,
+      timestamp: timestampStr,
+    );
+    _dbService.insertListeningEvent(
+      songId: id,
+      eventType: 'time_added',
+      durationSeconds: durationPlayed,
+      completed: 0,
       timestamp: timestampStr,
     );
 
@@ -213,6 +230,7 @@ class RecommendationService extends ChangeNotifier {
         duration: durationPlayed,
         completed: true,
       ));
+      // Action only - no duration sum from this event.
       _dbService.insertListeningEvent(
         songId: id,
         eventType: 'completed',
@@ -275,6 +293,7 @@ class RecommendationService extends ChangeNotifier {
         duration: durationPlayed,
         completed: true,
       ));
+      // Action only - no duration sum from this event.
       _dbService.insertListeningEvent(
         songId: id,
         eventType: 'completed',
@@ -311,6 +330,28 @@ class RecommendationService extends ChangeNotifier {
     final profile = _profiles[id];
     if (profile != null && additionalSeconds > 0) {
       profile.totalListenTime += additionalSeconds;
+
+      final now = DateTime.now();
+      final timestampStr = now.toIso8601String();
+
+      // Journal temporal history (only time_added events are used for duration sums)
+      final event = PlaybackEvent(
+        songId: id,
+        timestamp: now,
+        eventType: 'time_added',
+        duration: additionalSeconds,
+        completed: false,
+      );
+      _playbackEventController.add(event);
+
+      _dbService.insertListeningEvent(
+        songId: id,
+        eventType: 'time_added',
+        durationSeconds: additionalSeconds,
+        completed: 0,
+        timestamp: timestampStr,
+      );
+
       _scheduleSave();
       notifyListeners();
     }
@@ -318,11 +359,25 @@ class RecommendationService extends ChangeNotifier {
 
   Future<void> trackSkip(Song song, {int secondsPlayed = 0}) async {
     final id = song.id;
-    _skipCounts[id] = (_skipCounts[id] ?? 0) + 1;
-    _profiles[id]?.skipCount++;
-
     final now = DateTime.now();
     final timestampStr = now.toIso8601String();
+
+    _skipCounts[id] = (_skipCounts[id] ?? 0) + 1;
+
+    final profile = _profiles.putIfAbsent(
+      id,
+      () => SongProfile(
+        songId: id,
+        title: song.title,
+        artist: song.artist,
+        artistId: song.artistId,
+        albumId: song.albumId,
+        genre: song.genre,
+        duration: song.duration,
+      ),
+    );
+    profile.skipCount++;
+
     _playbackEventController.add(PlaybackEvent(
       songId: id,
       timestamp: now,
@@ -330,6 +385,28 @@ class RecommendationService extends ChangeNotifier {
       duration: secondsPlayed,
       completed: false,
     ));
+
+    // Also record time_added for the portion listened before skip
+    if (secondsPlayed > 0) {
+      profile.totalListenTime += secondsPlayed;
+
+      _playbackEventController.add(PlaybackEvent(
+        songId: id,
+        timestamp: now,
+        eventType: 'time_added',
+        duration: secondsPlayed,
+        completed: false,
+      ));
+
+      _dbService.insertListeningEvent(
+        songId: id,
+        eventType: 'time_added',
+        durationSeconds: secondsPlayed,
+        completed: 0,
+        timestamp: timestampStr,
+      );
+    }
+
     _dbService.insertListeningEvent(
       songId: id,
       eventType: 'skipped',
@@ -1083,7 +1160,7 @@ class SongProfile {
 class PlaybackEvent {
   final String songId;
   final DateTime timestamp;
-  final String eventType; // play_validated, completed, skipped
+  final String eventType; // play_validated, completed, skipped, time_added
   final int duration;
   final bool completed;
 

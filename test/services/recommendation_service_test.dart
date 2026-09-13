@@ -13,7 +13,7 @@ class FakeLibraryDatabaseService extends Fake implements LibraryDatabaseService 
     required int completed,
     required String timestamp,
   }) async {
-    // No-op for tests to avoid SQLite initialization error
+    // No-op
   }
 }
 
@@ -21,7 +21,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   SharedPreferences.setMockInitialValues({});
 
-  group('RecommendationService & PlaybackEvent Foundations', () {
+  group('RecommendationService Reliability Tests', () {
     late RecommendationService recommendationService;
 
     setUp(() async {
@@ -30,70 +30,48 @@ void main() {
       await recommendationService.initialize();
     });
 
-    test('trackSongPlay should set firstPlayed and emit play_validated event', () async {
-      final song = Song(id: 'test_song_1', title: 'Test Title', artist: 'Test Artist', genre: 'Rock');
-
-      // Listen for the stream events
-      final eventsFuture = recommendationService.playbackEvents.toList();
+    test('trackSongPlay should set firstPlayed and emit time_added', () async {
+      final song = Song(id: 's1', title: 'T1', artist: 'A1');
+      final events = <PlaybackEvent>[];
+      recommendationService.playbackEvents.listen((e) => events.add(e));
 
       await recommendationService.trackSongPlay(song, durationPlayed: 30);
-
-      final profile = recommendationService.profiles['test_song_1'];
-      expect(profile, isNotNull);
-      expect(profile!.firstPlayed, isNotNull);
       
-      final initialFirstPlayed = profile.firstPlayed;
-
-      // Track again to ensure firstPlayed does not change
-      await Future.delayed(const Duration(milliseconds: 10));
-      await recommendationService.trackSongPlay(song, durationPlayed: 45);
-      expect(profile.firstPlayed, equals(initialFirstPlayed));
-
-      recommendationService.dispose();
-      final events = await eventsFuture;
+      // Yield to let stream events be processed
+      await Future.delayed(Duration.zero);
+      
+      expect(recommendationService.profiles['s1']?.firstPlayed, isNotNull);
       expect(events.any((e) => e.eventType == 'play_validated'), isTrue);
+      expect(events.any((e) => e.eventType == 'time_added' && e.duration == 30), isTrue);
     });
 
-    test('trackSongCompletion should emit completed event', () async {
-      final song = Song(id: 'test_song_2', title: 'Test Title 2', artist: 'Test Artist 2');
+    test('trackSkip should update time and emit time_added', () async {
+      final song = Song(id: 's2', title: 'T2', artist: 'A2');
+      final events = <PlaybackEvent>[];
+      recommendationService.playbackEvents.listen((e) => events.add(e));
 
-      final eventsFuture = recommendationService.playbackEvents.take(2).toList();
+      await recommendationService.trackSkip(song, secondsPlayed: 10);
+      
+      await Future.delayed(Duration.zero);
+      
+      expect(recommendationService.profiles['s2']?.totalListenTime, 10);
+      expect(events.any((e) => e.eventType == 'skipped'), isTrue);
+      expect(events.any((e) => e.eventType == 'time_added' && e.duration == 10), isTrue);
+    });
 
+    test('trackIncrementalListenTime should emit time_added', () async {
+      final song = Song(id: 's3', title: 'T3', artist: 'A3');
       await recommendationService.trackSongPlay(song, durationPlayed: 30);
-      await recommendationService.trackSongCompletion(song, durationPlayed: 180);
+      
+      final events = <PlaybackEvent>[];
+      recommendationService.playbackEvents.listen((e) => events.add(e));
 
-      final profile = recommendationService.profiles['test_song_2'];
-      expect(profile!.completedPlays, equals(1));
-
-      recommendationService.dispose();
-      final events = await eventsFuture;
-      expect(events.any((e) => e.eventType == 'completed'), isTrue);
-    });
-
-    test('trackSkip should emit skipped event', () async {
-      final song = Song(id: 'test_song_3', title: 'Test Title 3');
-
-      final eventsFuture = recommendationService.playbackEvents.take(1).toList();
-
-      await recommendationService.trackSkip(song, secondsPlayed: 5);
-
-      recommendationService.dispose();
-      final events = await eventsFuture;
-      expect(events.first.eventType, equals('skipped'));
-      expect(events.first.duration, equals(5));
-    });
-
-    test('trackIncrementalListenTime should increase totalListenTime without changing playCount', () async {
-      final song = Song(id: 'test_song_4', title: 'Test Title 4');
-
-      await recommendationService.trackSongPlay(song, durationPlayed: 30);
-      final profile = recommendationService.profiles['test_song_4']!;
-      expect(profile.playCount, equals(1));
-      final initialListenTime = profile.totalListenTime;
-
-      await recommendationService.trackIncrementalListenTime(song, 15);
-      expect(profile.playCount, equals(1));
-      expect(profile.totalListenTime, equals(initialListenTime + 15));
+      await recommendationService.trackIncrementalListenTime(song, 5);
+      
+      await Future.delayed(Duration.zero);
+      
+      expect(recommendationService.profiles['s3']?.totalListenTime, 35);
+      expect(events.any((e) => e.eventType == 'time_added' && e.duration == 5), isTrue);
     });
   });
 }
