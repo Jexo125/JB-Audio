@@ -417,6 +417,7 @@
       }
     }
   },
+  "playsCount": "{count, plural, =0{Aucune lecture} =1{1 lecture} other{{count} lectures}}",
   "logout": "Déconnexion",
   "@logout": {
     "description": "Logout button label"
@@ -2357,5 +2358,68 @@
   "reset": "Réinitialiser",
   "developerSlogan": "Votre musique, votre serveur, votre liberté.",
   "easterEggSecret": "Tu as trouvé le secret ! 👀",
-  "developerRealName": "Jérémie Bourgade"
+  "developerRealName": "Jérémie Bourgade",
+  "statisticsTitle": "Statistiques",
+  "noHistory": "Aucun historique",
+  "today": "Aujourd'hui",
+  "thisWeek": "Cette semaine",
+  "thisMonth": "Ce mois",
+  "allTime": "Depuis toujours",
+  "listeningTime": "Temps d'écoute",
+  "plays": "Lectures",
+  "completedTracks": "Morceaux terminés",
+  "uniqueTitles": "Titres uniques",
+  "activeDays": "Jours actifs",
+  "discoveries": "Découvertes",
+  "topArtists": "Artistes les plus écoutés",
+  "topAlbums": "Albums les plus écoutés",
+  "topSongs": "Titres les plus écoutés",
+  "topGenres": "Genres les plus écoutés",
+  "listeningHistoryTitle": "Historique d'écoute",
+  "recentActivity": "Activité récente",
+  "last7Days": "7 derniers jours",
+  "noHistoryData": "Pas de données pour cette période",
+  "day": "jour",
+  "days": "jours",
+  "week": "semaine",
+  "weeks": "semaines",
+  "month": "mois",
+  "months": "mois",
+  "quests": "Quêtes",
+  "musicalQuests": "Quêtes musicales",
+  "inProgress": "En cours",
+  "completedStatus": "Terminée",
+  "noQuests": "Aucune quête",
+  "progress": "Progression",
+  "goalReached": "Objectif atteint",
+  "questCompleted": "Quête terminée",
+  "questExpired": "Quête expirée",
+  "questDailyListenerTitle": "Mélomane quotidien",
+  "questDailyListenerDesc": "Écouter 30 minutes de musique aujourd'hui",
+  "questDailyExplorerTitle": "Explorateur quotidien",
+  "questDailyExplorerDesc": "Écouter des morceaux de 3 artistes différents aujourd'hui",
+  "questDailyFinisherTitle": "Finisseur quotidien",
+  "questDailyFinisherDesc": "Terminer 5 morceaux aujourd'hui",
+  "questDailyDiscoveryTitle": "Nouveaux horizons",
+  "questDailyDiscoveryDesc": "Découvrir 3 nouveaux morceaux aujourd'hui",
+  "questWeeklyLoyaltyTitle": "Fidélité hebdomadaire",
+  "questWeeklyLoyaltyDesc": "Écouter de la musique au moins 3 jours cette semaine",
+  "categoryVolume": "Volume",
+  "categoryDiscovery": "Découverte",
+  "categoryDiversity": "Diversité",
+  "categoryTemporal": "Temps",
+  "categoryDiscipline": "Discipline",
+  "questProgressLabel": "{current} / {target}",
+  "@questProgressLabel": {
+    "placeholders": {
+      "current": { "type": "String" },
+      "target": { "type": "String" }
+    }
+  },
+  "questPercentLabel": "{percent}%",
+  "@questPercentLabel": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  }
 }

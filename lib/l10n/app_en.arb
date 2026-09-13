@@ -516,6 +516,7 @@
     }
   },
 
+  "playsCount": "{count, plural, =0{No plays} =1{1 play} other{{count} plays}}",
   "logout": "Logout",
   "@logout": {
     "description": "Logout button label"
@@ -2194,5 +2195,68 @@
   "reset": "Reset",
   "developerSlogan": "Your music, your server, your freedom.",
   "easterEggSecret": "You found the secret! 👀",
-  "developerRealName": "Jérémie Bourgade"
+  "developerRealName": "Jérémie Bourgade",
+  "statisticsTitle": "Statistics",
+  "noHistory": "No history",
+  "today": "Today",
+  "thisWeek": "This week",
+  "thisMonth": "This month",
+  "allTime": "All time",
+  "listeningTime": "Listening time",
+  "plays": "Plays",
+  "completedTracks": "Completed tracks",
+  "uniqueTitles": "Unique titles",
+  "activeDays": "Active days",
+  "discoveries": "Discoveries",
+  "topArtists": "Top Artists",
+  "topAlbums": "Top Albums",
+  "topSongs": "Top Songs",
+  "topGenres": "Top Genres",
+  "listeningHistoryTitle": "Listening History",
+  "recentActivity": "Recent activity",
+  "last7Days": "Last 7 days",
+  "noHistoryData": "No data for this period",
+  "day": "day",
+  "days": "days",
+  "week": "week",
+  "weeks": "weeks",
+  "month": "month",
+  "months": "months",
+  "quests": "Quests",
+  "musicalQuests": "Musical Quests",
+  "inProgress": "In progress",
+  "completedStatus": "Completed",
+  "noQuests": "No quests",
+  "progress": "Progress",
+  "goalReached": "Goal reached",
+  "questCompleted": "Quest completed",
+  "questExpired": "Quest expired",
+  "questDailyListenerTitle": "Daily Listener",
+  "questDailyListenerDesc": "Listen to 30 minutes of music today",
+  "questDailyExplorerTitle": "Daily Explorer",
+  "questDailyExplorerDesc": "Listen to tracks from 3 different artists today",
+  "questDailyFinisherTitle": "Daily Finisher",
+  "questDailyFinisherDesc": "Complete 5 tracks today",
+  "questDailyDiscoveryTitle": "New Horizons",
+  "questDailyDiscoveryDesc": "Discover 3 new tracks today",
+  "questWeeklyLoyaltyTitle": "Weekly Loyalty",
+  "questWeeklyLoyaltyDesc": "Listen to music at least 3 days this week",
+  "categoryVolume": "Volume",
+  "categoryDiscovery": "Discovery",
+  "categoryDiversity": "Diversity",
+  "categoryTemporal": "Temporal",
+  "categoryDiscipline": "Discipline",
+  "questProgressLabel": "{current} / {target}",
+  "@questProgressLabel": {
+    "placeholders": {
+      "current": { "type": "String" },
+      "target": { "type": "String" }
+    }
+  },
+  "questPercentLabel": "{percent}%",
+  "@questPercentLabel": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  }
 }

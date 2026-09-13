@@ -165,6 +165,7 @@ void main() async {
   final upnpService = UpnpService();
   final jukeboxService = JukeboxService();
   final themeService = ThemeService();
+  final libraryDatabaseService = LibraryDatabaseService();
 
   BpmAnalyzerService().initialize().catchError((e) {
     debugPrint('Failed to initialize BPM analyzer: $e');
@@ -252,10 +253,32 @@ void main() async {
   );
   playerProvider.setLibraryProvider(libraryProvider);
 
+  final statisticsService = StatisticsService(
+    libraryDatabaseService,
+    recommendationService,
+  );
+
+  final musicQuestService = MusicQuestService(
+    libraryDatabaseService,
+    recommendationService,
+    statisticsService,
+  );
+
+  // Initialize MusicQuestService (async but not awaited to avoid blocking main app start,
+  // the service handles its own loading state and lifecycle)
+  unawaited(musicQuestService.initialize().catchError((e) {
+    debugPrint('Failed to initialize MusicQuestService: $e');
+  }));
+
   final Widget appWithProviders = MultiProvider(
     providers: [
       Provider<StorageService>.value(value: storageService),
       Provider<SubsonicService>.value(value: subsonicService),
+      Provider<LibraryDatabaseService>.value(value: libraryDatabaseService),
+      Provider<StatisticsService>.value(value: statisticsService),
+      Provider<MusicQuestService>.value(
+        value: musicQuestService,
+      ),
       ChangeNotifierProvider<RecommendationService>.value(
         value: recommendationService,
       ),
@@ -275,14 +298,26 @@ void main() async {
       ChangeNotifierProvider<PlayerProvider>.value(value: playerProvider),
       ChangeNotifierProvider<LibraryProvider>.value(value: libraryProvider),
     ],
-    child: const MuslyApp(),
+    child: MuslyApp(musicQuestService: musicQuestService),
   );
 
   runApp(appWithProviders);
 }
 
-class MuslyApp extends StatelessWidget {
-  const MuslyApp({super.key});
+class MuslyApp extends StatefulWidget {
+  final MusicQuestService musicQuestService;
+  const MuslyApp({super.key, required this.musicQuestService});
+
+  @override
+  State<MuslyApp> createState() => _MuslyAppState();
+}
+
+class _MuslyAppState extends State<MuslyApp> {
+  @override
+  void dispose() {
+    widget.musicQuestService.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

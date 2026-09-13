@@ -331,6 +331,18 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String playsCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lectures',
+      one: '1 lecture',
+      zero: 'Aucune lecture',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get logout => 'Déconnexion';
 
   @override
@@ -1003,7 +1015,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get topSongs => 'Titres populaires';
+  String get topSongs => 'Titres les plus écoutés';
 
   @override
   String get connected => 'Connecté';
@@ -2259,4 +2271,165 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get developerRealName => 'Jérémie Bourgade';
+
+  @override
+  String get statisticsTitle => 'Statistiques';
+
+  @override
+  String get noHistory => 'Aucun historique';
+
+  @override
+  String get today => 'Aujourd\'hui';
+
+  @override
+  String get thisWeek => 'Cette semaine';
+
+  @override
+  String get thisMonth => 'Ce mois';
+
+  @override
+  String get allTime => 'Depuis toujours';
+
+  @override
+  String get listeningTime => 'Temps d\'écoute';
+
+  @override
+  String get plays => 'Lectures';
+
+  @override
+  String get completedTracks => 'Morceaux terminés';
+
+  @override
+  String get uniqueTitles => 'Titres uniques';
+
+  @override
+  String get activeDays => 'Jours actifs';
+
+  @override
+  String get discoveries => 'Découvertes';
+
+  @override
+  String get topArtists => 'Artistes les plus écoutés';
+
+  @override
+  String get topAlbums => 'Albums les plus écoutés';
+
+  @override
+  String get topGenres => 'Genres les plus écoutés';
+
+  @override
+  String get listeningHistoryTitle => 'Historique d\'écoute';
+
+  @override
+  String get recentActivity => 'Activité récente';
+
+  @override
+  String get last7Days => '7 derniers jours';
+
+  @override
+  String get noHistoryData => 'Pas de données pour cette période';
+
+  @override
+  String get day => 'jour';
+
+  @override
+  String get days => 'jours';
+
+  @override
+  String get week => 'semaine';
+
+  @override
+  String get weeks => 'semaines';
+
+  @override
+  String get month => 'mois';
+
+  @override
+  String get months => 'mois';
+
+  @override
+  String get quests => 'Quêtes';
+
+  @override
+  String get musicalQuests => 'Quêtes musicales';
+
+  @override
+  String get inProgress => 'En cours';
+
+  @override
+  String get completedStatus => 'Terminée';
+
+  @override
+  String get noQuests => 'Aucune quête';
+
+  @override
+  String get progress => 'Progression';
+
+  @override
+  String get goalReached => 'Objectif atteint';
+
+  @override
+  String get questCompleted => 'Quête terminée';
+
+  @override
+  String get questExpired => 'Quête expirée';
+
+  @override
+  String get questDailyListenerTitle => 'Mélomane quotidien';
+
+  @override
+  String get questDailyListenerDesc =>
+      'Écouter 30 minutes de musique aujourd\'hui';
+
+  @override
+  String get questDailyExplorerTitle => 'Explorateur quotidien';
+
+  @override
+  String get questDailyExplorerDesc =>
+      'Écouter des morceaux de 3 artistes différents aujourd\'hui';
+
+  @override
+  String get questDailyFinisherTitle => 'Finisseur quotidien';
+
+  @override
+  String get questDailyFinisherDesc => 'Terminer 5 morceaux aujourd\'hui';
+
+  @override
+  String get questDailyDiscoveryTitle => 'Nouveaux horizons';
+
+  @override
+  String get questDailyDiscoveryDesc =>
+      'Découvrir 3 nouveaux morceaux aujourd\'hui';
+
+  @override
+  String get questWeeklyLoyaltyTitle => 'Fidélité hebdomadaire';
+
+  @override
+  String get questWeeklyLoyaltyDesc =>
+      'Écouter de la musique au moins 3 jours cette semaine';
+
+  @override
+  String get categoryVolume => 'Volume';
+
+  @override
+  String get categoryDiscovery => 'Découverte';
+
+  @override
+  String get categoryDiversity => 'Diversité';
+
+  @override
+  String get categoryTemporal => 'Temps';
+
+  @override
+  String get categoryDiscipline => 'Discipline';
+
+  @override
+  String questProgressLabel(String current, String target) {
+    return '$current / $target';
+  }
+
+  @override
+  String questPercentLabel(int percent) {
+    return '$percent%';
+  }
 }

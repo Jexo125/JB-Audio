@@ -742,6 +742,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =0{No albums} =1{1 album} other{{count} albums}}'**
   String albumsCount(int count);
 
+  /// No description provided for @playsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No plays} =1{1 play} other{{count} plays}}'**
+  String playsCount(num count);
+
   /// Logout button label
   ///
   /// In en, this message translates to:
@@ -4185,6 +4191,312 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Jérémie Bourgade'**
   String get developerRealName;
+
+  /// No description provided for @statisticsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get statisticsTitle;
+
+  /// No description provided for @noHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No history'**
+  String get noHistory;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @thisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get thisWeek;
+
+  /// No description provided for @thisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get thisMonth;
+
+  /// No description provided for @allTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get allTime;
+
+  /// No description provided for @listeningTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening time'**
+  String get listeningTime;
+
+  /// No description provided for @plays.
+  ///
+  /// In en, this message translates to:
+  /// **'Plays'**
+  String get plays;
+
+  /// No description provided for @completedTracks.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed tracks'**
+  String get completedTracks;
+
+  /// No description provided for @uniqueTitles.
+  ///
+  /// In en, this message translates to:
+  /// **'Unique titles'**
+  String get uniqueTitles;
+
+  /// No description provided for @activeDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Active days'**
+  String get activeDays;
+
+  /// No description provided for @discoveries.
+  ///
+  /// In en, this message translates to:
+  /// **'Discoveries'**
+  String get discoveries;
+
+  /// No description provided for @topArtists.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Artists'**
+  String get topArtists;
+
+  /// No description provided for @topAlbums.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Albums'**
+  String get topAlbums;
+
+  /// No description provided for @topGenres.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Genres'**
+  String get topGenres;
+
+  /// No description provided for @listeningHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening History'**
+  String get listeningHistoryTitle;
+
+  /// No description provided for @recentActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent activity'**
+  String get recentActivity;
+
+  /// No description provided for @last7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days'**
+  String get last7Days;
+
+  /// No description provided for @noHistoryData.
+  ///
+  /// In en, this message translates to:
+  /// **'No data for this period'**
+  String get noHistoryData;
+
+  /// No description provided for @day.
+  ///
+  /// In en, this message translates to:
+  /// **'day'**
+  String get day;
+
+  /// No description provided for @days.
+  ///
+  /// In en, this message translates to:
+  /// **'days'**
+  String get days;
+
+  /// No description provided for @week.
+  ///
+  /// In en, this message translates to:
+  /// **'week'**
+  String get week;
+
+  /// No description provided for @weeks.
+  ///
+  /// In en, this message translates to:
+  /// **'weeks'**
+  String get weeks;
+
+  /// No description provided for @month.
+  ///
+  /// In en, this message translates to:
+  /// **'month'**
+  String get month;
+
+  /// No description provided for @months.
+  ///
+  /// In en, this message translates to:
+  /// **'months'**
+  String get months;
+
+  /// No description provided for @quests.
+  ///
+  /// In en, this message translates to:
+  /// **'Quests'**
+  String get quests;
+
+  /// No description provided for @musicalQuests.
+  ///
+  /// In en, this message translates to:
+  /// **'Musical Quests'**
+  String get musicalQuests;
+
+  /// No description provided for @inProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get inProgress;
+
+  /// No description provided for @completedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get completedStatus;
+
+  /// No description provided for @noQuests.
+  ///
+  /// In en, this message translates to:
+  /// **'No quests'**
+  String get noQuests;
+
+  /// No description provided for @progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get progress;
+
+  /// No description provided for @goalReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal reached'**
+  String get goalReached;
+
+  /// No description provided for @questCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Quest completed'**
+  String get questCompleted;
+
+  /// No description provided for @questExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Quest expired'**
+  String get questExpired;
+
+  /// No description provided for @questDailyListenerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Listener'**
+  String get questDailyListenerTitle;
+
+  /// No description provided for @questDailyListenerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen to 30 minutes of music today'**
+  String get questDailyListenerDesc;
+
+  /// No description provided for @questDailyExplorerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Explorer'**
+  String get questDailyExplorerTitle;
+
+  /// No description provided for @questDailyExplorerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen to tracks from 3 different artists today'**
+  String get questDailyExplorerDesc;
+
+  /// No description provided for @questDailyFinisherTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Finisher'**
+  String get questDailyFinisherTitle;
+
+  /// No description provided for @questDailyFinisherDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete 5 tracks today'**
+  String get questDailyFinisherDesc;
+
+  /// No description provided for @questDailyDiscoveryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New Horizons'**
+  String get questDailyDiscoveryTitle;
+
+  /// No description provided for @questDailyDiscoveryDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover 3 new tracks today'**
+  String get questDailyDiscoveryDesc;
+
+  /// No description provided for @questWeeklyLoyaltyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Loyalty'**
+  String get questWeeklyLoyaltyTitle;
+
+  /// No description provided for @questWeeklyLoyaltyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen to music at least 3 days this week'**
+  String get questWeeklyLoyaltyDesc;
+
+  /// No description provided for @categoryVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get categoryVolume;
+
+  /// No description provided for @categoryDiscovery.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovery'**
+  String get categoryDiscovery;
+
+  /// No description provided for @categoryDiversity.
+  ///
+  /// In en, this message translates to:
+  /// **'Diversity'**
+  String get categoryDiversity;
+
+  /// No description provided for @categoryTemporal.
+  ///
+  /// In en, this message translates to:
+  /// **'Temporal'**
+  String get categoryTemporal;
+
+  /// No description provided for @categoryDiscipline.
+  ///
+  /// In en, this message translates to:
+  /// **'Discipline'**
+  String get categoryDiscipline;
+
+  /// No description provided for @questProgressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} / {target}'**
+  String questProgressLabel(String current, String target);
+
+  /// No description provided for @questPercentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}%'**
+  String questPercentLabel(int percent);
 }
 
 class _AppLocalizationsDelegate

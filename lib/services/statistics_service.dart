@@ -55,6 +55,19 @@ class TimeDataPoint {
   });
 }
 
+/// Simple aggregates for a specific period.
+class PeriodStats {
+  final int totalListenTime;
+  final int totalPlayCount;
+  final int totalCompletionCount;
+
+  PeriodStats({
+    required this.totalListenTime,
+    required this.totalPlayCount,
+    required this.totalCompletionCount,
+  });
+}
+
 class StatisticsService {
   final LibraryDatabaseService _dbService;
   final RecommendationService _recommendationService;
@@ -356,5 +369,191 @@ class StatisticsService {
         playCount: (r['plays'] as num).toInt(),
       );
     }).toList();
+  }
+
+  /// Returns simple aggregates for the period [start, end).
+  Future<PeriodStats> getPeriodStats({
+    required DateTime start,
+    required DateTime end,
+  }) async {
+    final db = await _dbService.database;
+
+    final query = '''
+      SELECT 
+        SUM(CASE WHEN event_type = 'time_added' THEN duration_seconds ELSE 0 END) as totalTime,
+        SUM(CASE WHEN event_type = 'play_validated' THEN 1 ELSE 0 END) as totalPlays,
+        SUM(CASE WHEN event_type = 'completed' THEN 1 ELSE 0 END) as totalCompletions
+      FROM listening_events
+      WHERE timestamp >= ? AND timestamp < ?
+    ''';
+
+    final results = await db.rawQuery(query, [
+      start.toIso8601String(),
+      end.toIso8601String(),
+    ]);
+
+    if (results.isEmpty || results.first['totalTime'] == null) {
+      return PeriodStats(
+        totalListenTime: 0,
+        totalPlayCount: 0,
+        totalCompletionCount: 0,
+      );
+    }
+
+    final row = results.first;
+    return PeriodStats(
+      totalListenTime: (row['totalTime'] as num?)?.toInt() ?? 0,
+      totalPlayCount: (row['totalPlays'] as num?)?.toInt() ?? 0,
+      totalCompletionCount: (row['totalCompletions'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  // ── Music Quest Criteria Helpers ──────────────────────────────────────────
+
+  /// Counts distinct artists listened to during the period.
+  /// Falls back to SongProfile metadata for deleted songs.
+  Future<int> getDistinctArtistCount({DateTime? start, DateTime? end}) async {
+    final db = await _dbService.database;
+    String where = "";
+    List<Object?> whereArgs = [];
+    if (start != null) {
+      where += " AND e.timestamp >= ?";
+      whereArgs.add(start.toIso8601String());
+    }
+    if (end != null) {
+      where += " AND e.timestamp <= ?";
+      whereArgs.add(end.toIso8601String());
+    }
+
+    final query = '''
+      SELECT DISTINCT s.artist as name, e.song_id
+      FROM listening_events e
+      LEFT JOIN songs s ON e.song_id = s.id
+      WHERE (e.event_type = 'play_validated' OR e.event_type = 'time_added') $where
+    ''';
+
+    final results = await db.rawQuery(query, whereArgs);
+    final distinctNames = <String>{};
+
+    for (final r in results) {
+      String? artistName = r['name'] as String?;
+      if (artistName == null || artistName == "Unknown") {
+        final profile = _recommendationService.profiles[r['song_id'] as String];
+        artistName = profile?.artist ?? "Unknown";
+      }
+      distinctNames.add(artistName);
+    }
+
+    return distinctNames.where((n) => n != "Unknown").length;
+  }
+
+  /// Counts distinct albums listened to during the period.
+  Future<int> getDistinctAlbumCount({DateTime? start, DateTime? end}) async {
+    final db = await _dbService.database;
+    String where = "";
+    List<Object?> whereArgs = [];
+    if (start != null) {
+      where += " AND e.timestamp >= ?";
+      whereArgs.add(start.toIso8601String());
+    }
+    if (end != null) {
+      where += " AND e.timestamp <= ?";
+      whereArgs.add(end.toIso8601String());
+    }
+
+    final query = '''
+      SELECT DISTINCT s.albumId as id, e.song_id
+      FROM listening_events e
+      LEFT JOIN songs s ON e.song_id = s.id
+      WHERE (e.event_type = 'play_validated' OR e.event_type = 'time_added') $where
+    ''';
+
+    final results = await db.rawQuery(query, whereArgs);
+    final distinctIds = <String>{};
+
+    for (final r in results) {
+      String? albumId = r['id'] as String?;
+      if (albumId == null || albumId == "Unknown") {
+        final profile = _recommendationService.profiles[r['song_id'] as String];
+        albumId = profile?.albumId ?? "Unknown";
+      }
+      distinctIds.add(albumId);
+    }
+
+    return distinctIds.where((id) => id != "Unknown").length;
+  }
+
+  /// Counts distinct genres listened to during the period.
+  Future<int> getDistinctGenreCount({DateTime? start, DateTime? end}) async {
+    final db = await _dbService.database;
+    String where = "";
+    List<Object?> whereArgs = [];
+    if (start != null) {
+      where += " AND e.timestamp >= ?";
+      whereArgs.add(start.toIso8601String());
+    }
+    if (end != null) {
+      where += " AND e.timestamp <= ?";
+      whereArgs.add(end.toIso8601String());
+    }
+
+    final query = '''
+      SELECT DISTINCT s.genre as name, e.song_id
+      FROM listening_events e
+      LEFT JOIN songs s ON e.song_id = s.id
+      WHERE (e.event_type = 'play_validated' OR e.event_type = 'time_added') $where
+    ''';
+
+    final results = await db.rawQuery(query, whereArgs);
+    final distinctNames = <String>{};
+
+    for (final r in results) {
+      String? genre = r['name'] as String?;
+      if (genre == null || genre == "Unknown") {
+        final profile = _recommendationService.profiles[r['song_id'] as String];
+        genre = profile?.genre ?? "Unknown";
+      }
+      distinctNames.add(genre);
+    }
+
+    return distinctNames.where((n) => n != "Unknown").length;
+  }
+
+  /// Counts active listening days during the period.
+  /// Uses 'time_added' as the reliable indicator of real listening.
+  Future<int> getActiveDayCount({required DateTime start, required DateTime end}) async {
+    final db = await _dbService.database;
+    
+    final query = '''
+      SELECT COUNT(DISTINCT strftime('%Y-%m-%d', timestamp)) as days
+      FROM listening_events
+      WHERE event_type = 'time_added' 
+        AND timestamp >= ? AND timestamp <= ?
+    ''';
+
+    final results = await db.rawQuery(query, [
+      start.toIso8601String(),
+      end.toIso8601String(),
+    ]);
+
+    if (results.isEmpty) return 0;
+    return (results.first['days'] as num).toInt();
+  }
+
+  /// Counts how many tracks were discovered (first ever listen) during the period.
+  /// Relies on SongProfile.firstPlayed being within the range.
+  Future<int> getDiscoveryCount({required DateTime start, required DateTime end}) async {
+    final profiles = _recommendationService.profiles.values;
+    int count = 0;
+    
+    for (final p in profiles) {
+      if (p.firstPlayed != null) {
+        if ((p.firstPlayed!.isAtSameMomentAs(start) || p.firstPlayed!.isAfter(start)) &&
+            (p.firstPlayed!.isAtSameMomentAs(end) || p.firstPlayed!.isBefore(end))) {
+          count++;
+        }
+      }
+    }
+    return count;
   }
 }

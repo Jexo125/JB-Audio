@@ -16,3 +16,5 @@ export 'jukebox_service.dart';
 export 'theme_service.dart';
 export 'equalizer_service.dart';
 export 'library_database_service.dart';
+export 'statistics_service.dart';
+export 'music_quest_service.dart';

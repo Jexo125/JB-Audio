@@ -5,7 +5,6 @@ import '../models/song.dart';
 import '../models/album.dart';
 import '../models/artist.dart';
 import '../providers/providers.dart';
-import '../services/subsonic_service.dart';
 import '../services/local_music_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
@@ -20,6 +19,8 @@ import 'artist_screen.dart';
 import 'radio_screen.dart';
 import 'all_songs_screen.dart';
 import 'downloads_screen.dart';
+import 'statistics_screen.dart';
+import 'music_quests_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../services/offline_service.dart';
 import '../utils/genre_translator.dart';
@@ -267,6 +268,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     title: 'Téléchargements',
                     subtitle: 'Titres hors-ligne',
                     onTap: () => _navigate(context, const DownloadsScreen()),
+                  ),
+                  CategoryCard(
+                    icon: CupertinoIcons.chart_bar_alt_fill,
+                    colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
+                    title: l10n.statisticsTitle,
+                    subtitle: l10n.recentActivity,
+                    onTap: () => _navigate(context, const StatisticsScreen()),
+                  ),
+                  CategoryCard(
+                    icon: CupertinoIcons.flag_fill,
+                    colors: [theme.colorScheme.secondary, theme.colorScheme.primary],
+                    title: l10n.quests,
+                    subtitle: l10n.musicalQuests,
+                    onTap: () => _navigate(context, const MusicQuestsScreen()),
                   ),
                 ]),
               ),

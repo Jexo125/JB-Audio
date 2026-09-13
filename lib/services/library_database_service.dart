@@ -14,7 +14,7 @@ import '../models/models.dart';
 /// millions of rows can be written without spikes in memory usage.
 class LibraryDatabaseService {
   static const String _dbName = 'musly_library.db';
-  static const int _dbVersion = 3; // bumped from 2 for listening_events
+  static const int _dbVersion = 4; // bumped from 3 for quest_instances
   static const int _batchSize = 1000;
 
   Database? _db;
@@ -64,6 +64,24 @@ class LibraryDatabaseService {
             completed INTEGER NOT NULL DEFAULT 0
           )
         ''');
+      } catch (_) {}
+    }
+    if (oldVersion < 4) {
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS quest_instances (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            definition_id TEXT NOT NULL,
+            period_start TEXT NOT NULL,
+            period_end TEXT NOT NULL,
+            status TEXT NOT NULL,
+            completed_at TEXT
+          )
+        ''');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_quest_status ON quest_instances(status)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_quest_period ON quest_instances(period_start, period_end)');
       } catch (_) {}
     }
   }
@@ -160,6 +178,22 @@ class LibraryDatabaseService {
         completed INTEGER NOT NULL DEFAULT 0
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS quest_instances (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        definition_id TEXT NOT NULL,
+        period_start TEXT NOT NULL,
+        period_end TEXT NOT NULL,
+        status TEXT NOT NULL,
+        completed_at TEXT
+      )
+    ''');
+
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_quest_status ON quest_instances(status)');
+    await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_quest_period ON quest_instances(period_start, period_end)');
   }
 
   // ── Batch inserts ───────────────────────────────────────────────────────
@@ -319,6 +353,8 @@ class LibraryDatabaseService {
       await txn.delete('albums');
       await txn.delete('artists');
       await txn.delete('playlists');
+      await txn.delete('listening_events');
+      await txn.delete('quest_instances');
     });
   }
 
@@ -406,6 +442,77 @@ class LibraryDatabaseService {
     } catch (e) {
       debugPrint('Database error in insertListeningEvent: $e');
     }
+  }
+
+  // ── Music Quests ───────────────────────────────────────────────────────
+
+  Future<int> insertQuestInstance(MusicQuestInstance instance) async {
+    final db = await database;
+    return await db.insert('quest_instances', _questInstanceToMap(instance));
+  }
+
+  Future<List<MusicQuestInstance>> getQuestInstances() async {
+    final db = await database;
+    final maps = await db.query('quest_instances');
+    return maps.map((m) => _questInstanceFromMap(m)).toList();
+  }
+
+  Future<List<MusicQuestInstance>> getActiveQuestInstances() async {
+    final db = await database;
+    final maps = await db.query('quest_instances',
+        where: 'status = ?', whereArgs: [QuestStatus.active.name]);
+    return maps.map((m) => _questInstanceFromMap(m)).toList();
+  }
+
+  Future<List<MusicQuestInstance>> getQuestInstancesByPeriod(
+      DateTime start, DateTime end) async {
+    final db = await database;
+    final maps = await db.query('quest_instances',
+        where: 'period_start >= ? AND period_end <= ?',
+        whereArgs: [start.toIso8601String(), end.toIso8601String()]);
+    return maps.map((m) => _questInstanceFromMap(m)).toList();
+  }
+
+  Future<void> updateQuestInstanceStatus(int id, QuestStatus status,
+      {DateTime? completedAt}) async {
+    final db = await database;
+    await db.update(
+        'quest_instances',
+        {
+          'status': status.name,
+          'completed_at': completedAt?.toIso8601String(),
+        },
+        where: 'id = ?',
+        whereArgs: [id]);
+  }
+
+  Future<void> deleteQuestInstance(int id) async {
+    final db = await database;
+    await db.delete('quest_instances', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Map<String, dynamic> _questInstanceToMap(MusicQuestInstance instance) {
+    return {
+      if (instance.id != null) 'id': instance.id,
+      'definition_id': instance.definitionId,
+      'period_start': instance.periodStart.toIso8601String(),
+      'period_end': instance.periodEnd.toIso8601String(),
+      'status': instance.status.name,
+      'completed_at': instance.completedAt?.toIso8601String(),
+    };
+  }
+
+  MusicQuestInstance _questInstanceFromMap(Map<String, dynamic> m) {
+    return MusicQuestInstance(
+      id: m['id'] as int?,
+      definitionId: m['definition_id'] as String,
+      periodStart: DateTime.parse(m['period_start'] as String),
+      periodEnd: DateTime.parse(m['period_end'] as String),
+      status: QuestStatus.values.byName(m['status'] as String),
+      completedAt: m['completed_at'] != null
+          ? DateTime.parse(m['completed_at'] as String)
+          : null,
+    );
   }
 
   // ── Helpers: Song ───────────────────────────────────────────────────────

@@ -329,6 +329,18 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String playsCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count plays',
+      one: '1 play',
+      zero: 'No plays',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get logout => '退出登录';
 
   @override
@@ -2229,4 +2241,163 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get developerRealName => 'Jérémie Bourgade';
+
+  @override
+  String get statisticsTitle => 'Statistics';
+
+  @override
+  String get noHistory => 'No history';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get thisWeek => 'This week';
+
+  @override
+  String get thisMonth => 'This month';
+
+  @override
+  String get allTime => 'All time';
+
+  @override
+  String get listeningTime => 'Listening time';
+
+  @override
+  String get plays => 'Plays';
+
+  @override
+  String get completedTracks => 'Completed tracks';
+
+  @override
+  String get uniqueTitles => 'Unique titles';
+
+  @override
+  String get activeDays => 'Active days';
+
+  @override
+  String get discoveries => 'Discoveries';
+
+  @override
+  String get topArtists => 'Top Artists';
+
+  @override
+  String get topAlbums => 'Top Albums';
+
+  @override
+  String get topGenres => 'Top Genres';
+
+  @override
+  String get listeningHistoryTitle => 'Listening History';
+
+  @override
+  String get recentActivity => 'Recent activity';
+
+  @override
+  String get last7Days => 'Last 7 days';
+
+  @override
+  String get noHistoryData => 'No data for this period';
+
+  @override
+  String get day => 'day';
+
+  @override
+  String get days => 'days';
+
+  @override
+  String get week => 'week';
+
+  @override
+  String get weeks => 'weeks';
+
+  @override
+  String get month => 'month';
+
+  @override
+  String get months => 'months';
+
+  @override
+  String get quests => 'Quests';
+
+  @override
+  String get musicalQuests => 'Musical Quests';
+
+  @override
+  String get inProgress => 'In progress';
+
+  @override
+  String get completedStatus => 'Completed';
+
+  @override
+  String get noQuests => 'No quests';
+
+  @override
+  String get progress => 'Progress';
+
+  @override
+  String get goalReached => 'Goal reached';
+
+  @override
+  String get questCompleted => 'Quest completed';
+
+  @override
+  String get questExpired => 'Quest expired';
+
+  @override
+  String get questDailyListenerTitle => 'Daily Listener';
+
+  @override
+  String get questDailyListenerDesc => 'Listen to 30 minutes of music today';
+
+  @override
+  String get questDailyExplorerTitle => 'Daily Explorer';
+
+  @override
+  String get questDailyExplorerDesc =>
+      'Listen to tracks from 3 different artists today';
+
+  @override
+  String get questDailyFinisherTitle => 'Daily Finisher';
+
+  @override
+  String get questDailyFinisherDesc => 'Complete 5 tracks today';
+
+  @override
+  String get questDailyDiscoveryTitle => 'New Horizons';
+
+  @override
+  String get questDailyDiscoveryDesc => 'Discover 3 new tracks today';
+
+  @override
+  String get questWeeklyLoyaltyTitle => 'Weekly Loyalty';
+
+  @override
+  String get questWeeklyLoyaltyDesc =>
+      'Listen to music at least 3 days this week';
+
+  @override
+  String get categoryVolume => 'Volume';
+
+  @override
+  String get categoryDiscovery => 'Discovery';
+
+  @override
+  String get categoryDiversity => 'Diversity';
+
+  @override
+  String get categoryTemporal => 'Temporal';
+
+  @override
+  String get categoryDiscipline => 'Discipline';
+
+  @override
+  String questProgressLabel(String current, String target) {
+    return '$current / $target';
+  }
+
+  @override
+  String questPercentLabel(int percent) {
+    return '$percent%';
+  }
 }
