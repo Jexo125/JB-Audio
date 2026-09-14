@@ -5,6 +5,19 @@ All notable changes to JB Audio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.6] - 2026-09-14
+
+### 🎛️ Audio
+* Audio Ducking configurable : diminution automatique du volume lors des notifications système (activable/désactivable dans les paramètres).
+
+### ✨ Gamification UX
+* Résumé XP sur l'accueil : affichage direct du niveau et de la progression sous le message de bienvenue.
+* Barre de progression animée sur l'accueil pour un suivi visuel fluide de l'XP.
+* Accès direct aux Quêtes depuis la barre supérieure de l'accueil.
+* Célébration RPG : nouvelle animation immersive lors des montées de niveau.
+* Présentation RPG : introduction pédagogique du système de gamification pour les nouveaux utilisateurs et lors des mises à jour majeures.
+* Persistance versionnée de l'introduction pour garantir que chaque utilisateur reçoive les informations importantes une seule fois.
+
 ## [2.1.5] - 2026-09-13
 
 ### ✨ Gamification

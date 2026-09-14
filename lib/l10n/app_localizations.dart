@@ -2926,6 +2926,18 @@ abstract class AppLocalizations {
   /// **'Smoothly fade audio when playing or pausing'**
   String get fadeInOutSubtitle;
 
+  /// Audio ducking toggle label
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce volume during notifications'**
+  String get audioDucking;
+
+  /// Audio ducking toggle subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Temporarily lower music volume when a notification sounds.'**
+  String get audioDuckingSubtitle;
+
   /// Slider label showing fade duration in milliseconds
   ///
   /// In en, this message translates to:
@@ -4629,6 +4641,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'10 days of active listening'**
   String get titleRegularDesc;
+
+  /// No description provided for @introStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to the JB Audio musical adventure!'**
+  String get introStep1;
+
+  /// No description provided for @introStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Every minute of listening earns you XP.'**
+  String get introStep2;
+
+  /// No description provided for @introStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock legendary titles and level up.'**
+  String get introStep3;
+
+  /// No description provided for @introStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete musical quests for massive bonuses.'**
+  String get introStep4;
+
+  /// No description provided for @introStep5.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your progress in the Library.'**
+  String get introStep5;
 }
 
 class _AppLocalizationsDelegate

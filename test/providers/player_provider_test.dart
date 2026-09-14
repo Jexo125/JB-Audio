@@ -103,5 +103,19 @@ void main() {
         playerProvider.addToQueue(song);
       }
     });
+
+    test('should update audio ducking setting', () async {
+      // Note: default might have been changed by other tests if singleton is dirty
+      await playerProvider.setAudioDuckingEnabled(true);
+      expect(playerProvider.audioDuckingEnabled, true);
+
+      await playerProvider.setAudioDuckingEnabled(false);
+      expect(playerProvider.audioDuckingEnabled, false);
+      expect(await StorageService().getAudioDuckingEnabled(), false);
+
+      await playerProvider.setAudioDuckingEnabled(true);
+      expect(playerProvider.audioDuckingEnabled, true);
+      expect(await StorageService().getAudioDuckingEnabled(), true);
+    });
   });
 }

@@ -1718,6 +1718,14 @@
   "@fadeInOutSubtitle": {
     "description": "Subtitle explaining fade in/out functionality"
   },
+  "audioDucking": "Réduction du volume lors des notifications",
+  "@audioDucking": {
+    "description": "Audio ducking toggle label"
+  },
+  "audioDuckingSubtitle": "Diminue temporairement le volume de la musique lorsqu'une notification est jouée.",
+  "@audioDuckingSubtitle": {
+    "description": "Audio ducking toggle subtitle"
+  },
   "fadeDuration": "Durée du fondu : {duration}ms",
   "@fadeDuration": {
     "description": "Slider label showing fade duration in milliseconds",
@@ -2473,5 +2481,10 @@
   "titlePioneer": "Pionnier",
   "titlePioneerDesc": "Faire 20 découvertes",
   "titleRegular": "Habitué",
-  "titleRegularDesc": "10 jours d'activité"
+  "titleRegularDesc": "10 jours d'activité",
+  "introStep1": "Bienvenue dans l'aventure musicale JB Audio !",
+  "introStep2": "Chaque minute d'écoute vous rapporte de l'XP.",
+  "introStep3": "Débloquez des titres légendaires et montez en niveau.",
+  "introStep4": "Relevez des quêtes musicales pour des bonus massifs.",
+  "introStep5": "Retrouvez votre progression dans la Bibliothèque."
 }

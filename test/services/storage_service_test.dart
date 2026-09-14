@@ -26,5 +26,16 @@ void main() {
       await storageService.saveDiscordRpcEnabled(false);
       expect(await storageService.getDiscordRpcEnabled(), false);
     });
+
+    test('getAudioDuckingEnabled returns true by default', () async {
+      expect(await storageService.getAudioDuckingEnabled(), true);
+    });
+
+    test('saveAudioDuckingEnabled updates value', () async {
+      await storageService.saveAudioDuckingEnabled(false);
+      expect(await storageService.getAudioDuckingEnabled(), false);
+      await storageService.saveAudioDuckingEnabled(true);
+      expect(await storageService.getAudioDuckingEnabled(), true);
+    });
   });
 }

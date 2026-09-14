@@ -8,14 +8,16 @@ La version 2.0 apporte une refonte profonde des performances réseau, une gestio
 
 ---
 
-## 🚀 Nouveautés de la Version 2.1.5
+## 🚀 Nouveautés de la Version 2.1.6
 
-### ✨ Gamification & Progression
-- **Système d'XP** : Gagnez de l'expérience en écoutant votre musique et en accomplissant des quêtes.
-- **Niveaux d'Écoute** : Progressez sur 20 niveaux pour marquer votre fidélité musicale.
-- **Titres & Milestones** : Débloquez des titres prestigieux comme *Mélomane*, *Explorateur* ou *Pionnier*.
-- **Dashboard Personnel** : Suivez votre progression détaillée depuis le nouvel onglet dédié.
-- **Notifications Temps Réel** : Recevez des félicitations immédiates lors de vos succès.
+### 🎮 UX Gamification
+- **Progression sur l'Accueil** : Visualisez votre niveau et XP dès l'ouverture de l'application.
+- **Célébration RPG** : Vivez une expérience immersive lors de chaque montée de niveau.
+- **Accès Rapide aux Quêtes** : Nouveau bouton dédié sur l'écran principal.
+- **Introduction RPG** : Découvrez le système de progression via une nouvelle présentation interactive.
+
+### 🎛️ Audio
+- **Audio Ducking** : Contrôlez si la musique doit baisser lors des notifications.
 
 ---
 

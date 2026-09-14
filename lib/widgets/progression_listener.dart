@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/xp_service.dart';
 import '../models/models.dart';
 import '../l10n/app_localizations.dart';
+import 'level_up_celebration.dart';
 
 /// A global listener that monitors XP progression and displays
 /// real-time feedback (SnackBars) for level ups and title unlocks.
@@ -55,7 +56,7 @@ class _ProgressionListenerState extends State<ProgressionListener> {
 
     // 1. Check for Level Up
     if (_lastLevel != null && snapshot.currentLevel > _lastLevel!) {
-      _showLevelUpFeedback(context, snapshot.currentLevel, l10n);
+      LevelUpCelebration.show(context, snapshot.currentLevel, snapshot.progressPercent);
     }
     _lastLevel = snapshot.currentLevel;
 
@@ -70,35 +71,6 @@ class _ProgressionListenerState extends State<ProgressionListener> {
       }
     }
     _unlockedTitleIds = currentUnlocked.map((s) => s.definition.id).toSet();
-  }
-
-  void _showLevelUpFeedback(BuildContext context, int newLevel, AppLocalizations l10n) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(CupertinoIcons.sparkles, color: Colors.amber, size: 28),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.levelUpNotification(newLevel),
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-      ),
-    );
   }
 
   void _showTitleUnlockFeedback(BuildContext context, TitleSnapshot title, AppLocalizations l10n) {

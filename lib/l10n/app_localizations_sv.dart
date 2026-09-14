@@ -1540,6 +1540,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get fadeInOutSubtitle => 'Smoothly fade audio when playing or pausing';
 
   @override
+  String get audioDucking => 'Reduce volume during notifications';
+
+  @override
+  String get audioDuckingSubtitle =>
+      'Temporarily lower music volume when a notification sounds.';
+
+  @override
   String fadeDuration(int duration) {
     return 'Fade Duration: ${duration}ms';
   }
@@ -2502,4 +2509,19 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get titleRegularDesc => '10 days of active listening';
+
+  @override
+  String get introStep1 => 'Welcome to the JB Audio musical adventure!';
+
+  @override
+  String get introStep2 => 'Every minute of listening earns you XP.';
+
+  @override
+  String get introStep3 => 'Unlock legendary titles and level up.';
+
+  @override
+  String get introStep4 => 'Complete musical quests for massive bonuses.';
+
+  @override
+  String get introStep5 => 'Track your progress in the Library.';
 }

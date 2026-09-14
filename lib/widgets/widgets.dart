@@ -19,3 +19,6 @@ export 'recommended_carousel.dart';
 export 'category_card.dart';
 export 'stat_metric_card.dart';
 export 'quest_card.dart';
+export 'xp_summary_card.dart';
+export 'gamification_intro_overlay.dart';
+export 'level_up_celebration.dart';

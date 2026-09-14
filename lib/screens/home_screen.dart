@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import '../models/models.dart';
 import '../providers/library_provider.dart';
 import '../providers/player_provider.dart';
@@ -14,6 +15,7 @@ import '../utils/navigation_helper.dart';
 import '../widgets/widgets.dart';
 import 'album_screen.dart';
 import 'playlist_screen.dart';
+import 'music_quests_screen.dart';
 import '../l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,6 +29,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Map<String, List<Song>> _cachedMixes = const {};
   List<Song> _cachedPersonalized = const [];
   String _lastRandomKey = '';
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        GamificationIntroOverlay.showIfNeeded(context);
+      }
+    });
+  }
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
@@ -84,18 +96,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            /*actions: [
+            actions: [
               IconButton(
                 icon: Icon(
-                  CupertinoIcons.clock,
+                  CupertinoIcons.flag_fill,
                   color: isDark ? Colors.white : Colors.black,
                 ),
                 onPressed: () {
-                  NavigationHelper.push(context, const HistoryScreen());
+                  NavigationHelper.push(context, const MusicQuestsScreen());
                 },
               ),
               if (isDesktop) const SizedBox(width: 8),
-            ],*/
+            ],
           ),
           SliverToBoxAdapter(
             child: Consumer2<LibraryProvider, RecommendationService>(
@@ -174,6 +186,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const XpSummaryCard(),
+                      
                       if (libraryProvider.recentAlbums.isNotEmpty) ...[
                         const SizedBox(height: 16),
                         HorizontalScrollSection(

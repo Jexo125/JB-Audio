@@ -52,6 +52,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
   Duration _duration = Duration.zero;
   Song? _currentSong;
   double _volume = 1.0;
+  bool _audioDuckingEnabled = true;
 
   bool _isRenderingRemotely = false;
   String? _resolvedArtworkUrl;
@@ -315,7 +316,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
       await _audioPlayer.setUrl(
         audioUri.toString(),
-        headers: {'User-Agent': 'JB Audio/2.1.5'},
+        headers: {'User-Agent': 'JB Audio/2.1.6'},
       );
       await _audioPlayer.seek(pos);
       if (wasPlaying) {
@@ -582,6 +583,20 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
               _repeatMode == RepeatMode.all ||
               (_shuffleEnabled && _shuffleHistory.isNotEmpty));
   double get volume => _volume;
+  bool get audioDuckingEnabled => _audioDuckingEnabled;
+
+  Future<void> setAudioDuckingEnabled(bool value) async {
+    _audioDuckingEnabled = value;
+    await _storageService.saveAudioDuckingEnabled(value);
+
+    // Reconfigure audio session
+    final session = await AudioSession.instance;
+    await session.configure(AudioSessionConfiguration.music().copyWith(
+      androidWillPauseWhenDucked: !_audioDuckingEnabled,
+    ));
+
+    notifyListeners();
+  }
 
   RadioStation? get currentRadioStation => _currentRadioStation;
   bool get isPlayingRadio => _isPlayingRadio;
@@ -733,8 +748,11 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> _initializePlayer() async {
     try {
+      _audioDuckingEnabled = await _storageService.getAudioDuckingEnabled();
       final session = await AudioSession.instance;
-      await session.configure(const AudioSessionConfiguration.music());
+      await session.configure(AudioSessionConfiguration.music().copyWith(
+        androidWillPauseWhenDucked: !_audioDuckingEnabled,
+      ));
       await session.setActive(true);
 
       _volume = _audioPlayer.volume;
@@ -986,7 +1004,7 @@ class PlayerProvider extends ChangeNotifier with WidgetsBindingObserver {
 
       await _audioPlayer.setUrl(
         audioUri.toString(),
-        headers: {'User-Agent': 'JB Audio/2.1.5'},
+        headers: {'User-Agent': 'JB Audio/2.1.6'},
       );
       await _audioPlayer.play();
       _isPlaying = true;

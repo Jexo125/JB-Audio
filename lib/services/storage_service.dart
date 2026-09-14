@@ -22,7 +22,9 @@ class StorageService {
   static const String _repeatModeKey = 'repeat_mode';
   static const String _gaplessPlaybackKey = 'gapless_playback';
   static const String _lrcLibFallbackKey = 'lrclib_fallback';
+  static const String _audioDuckingKey = 'audio_ducking';
   static const String _volumeKey = 'volume';
+  static const String _gamificationIntroVersionKey = 'gamification_intro_version_seen';
 
   Future<String?> _safeSecureRead(String key) async {
     try {
@@ -270,6 +272,16 @@ class StorageService {
     return prefs.getBool(_lrcLibFallbackKey) ?? false;
   }
 
+  Future<void> saveAudioDuckingEnabled(bool enabled) async {
+    final prefs = await _prefs;
+    await prefs.setBool(_audioDuckingKey, enabled);
+  }
+
+  Future<bool> getAudioDuckingEnabled() async {
+    final prefs = await _prefs;
+    return prefs.getBool(_audioDuckingKey) ?? true;
+  }
+
   Future<void> saveVolume(double volume) async {
     final prefs = await _prefs;
     await prefs.setDouble(_volumeKey, volume);
@@ -278,6 +290,16 @@ class StorageService {
   Future<double> getVolume() async {
     final prefs = await _prefs;
     return prefs.getDouble(_volumeKey) ?? 1.0;
+  }
+
+  Future<void> saveGamificationIntroVersionSeen(int version) async {
+    final prefs = await _prefs;
+    await prefs.setInt(_gamificationIntroVersionKey, version);
+  }
+
+  Future<int> getGamificationIntroVersionSeen() async {
+    final prefs = await _prefs;
+    return prefs.getInt(_gamificationIntroVersionKey) ?? 0;
   }
 
   Future<void> saveDiscordRpcEnabled(bool enabled) async {

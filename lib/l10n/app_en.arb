@@ -1692,6 +1692,10 @@
 
   "fadeInOutSubtitle": "Smoothly fade audio when playing or pausing",
   "@fadeInOutSubtitle": { "description": "Subtitle explaining fade in/out functionality" },
+  "audioDucking": "Reduce volume during notifications",
+  "@audioDucking": { "description": "Audio ducking toggle label" },
+  "audioDuckingSubtitle": "Temporarily lower music volume when a notification sounds.",
+  "@audioDuckingSubtitle": { "description": "Audio ducking toggle subtitle" },
 
   "fadeDuration": "Fade Duration: {duration}ms",
   "@fadeDuration": {
@@ -2310,5 +2314,10 @@
   "titlePioneer": "Pioneer",
   "titlePioneerDesc": "Make 20 new discoveries",
   "titleRegular": "Regular",
-  "titleRegularDesc": "10 days of active listening"
+  "titleRegularDesc": "10 days of active listening",
+  "introStep1": "Welcome to the JB Audio musical adventure!",
+  "introStep2": "Every minute of listening earns you XP.",
+  "introStep3": "Unlock legendary titles and level up.",
+  "introStep4": "Complete musical quests for massive bonuses.",
+  "introStep5": "Track your progress in the Library."
 }

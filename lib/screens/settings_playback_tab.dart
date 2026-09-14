@@ -58,6 +58,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
           ],
         ),
         const SizedBox(height: 24),
+        _buildAudioDuckingSection(),
+        const SizedBox(height: 24),
         _buildLrcLibSection(),
         const SizedBox(height: 24),
         _buildTranscodingSection(),
@@ -115,6 +117,44 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
     playerProvider.autoDjService.setMode(mode);
     setState(() => _autoDjMode = mode);
+  }
+
+  Widget _buildAudioDuckingSection() {
+    final accent = Theme.of(context).colorScheme.primary;
+    return Consumer<PlayerProvider>(
+      builder: (context, player, _) {
+        return SettingsSectionCard(
+          title: 'Audio',
+          children: [
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              leading: SettingsIconBadge(
+                gradientColors: const [Color(0xFF007AFF), Color(0xFF5AC8FA)],
+                icon: CupertinoIcons.speaker_2_fill,
+              ),
+              title: Text(
+                AppLocalizations.of(context)!.audioDucking,
+                style: const TextStyle(fontSize: 16),
+              ),
+              subtitle: Text(
+                AppLocalizations.of(context)!.audioDuckingSubtitle,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: context.isDark
+                      ? Colors.white.withValues(alpha: 0.5)
+                      : Colors.black.withValues(alpha: 0.5),
+                ),
+              ),
+              trailing: CupertinoSwitch(
+                value: player.audioDuckingEnabled,
+                activeTrackColor: accent,
+                onChanged: (v) => player.setAudioDuckingEnabled(v),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildAutoDjSongsSlider() {

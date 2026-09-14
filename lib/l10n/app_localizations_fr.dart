@@ -1546,6 +1546,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get fadeInOutSubtitle => 'Fondu progressif lors de la lecture/pause';
 
   @override
+  String get audioDucking => 'Réduction du volume lors des notifications';
+
+  @override
+  String get audioDuckingSubtitle =>
+      'Diminue temporairement le volume de la musique lorsqu\'une notification est jouée.';
+
+  @override
   String fadeDuration(int duration) {
     return 'Durée du fondu : ${duration}ms';
   }
@@ -2510,4 +2517,21 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get titleRegularDesc => '10 jours d\'activité';
+
+  @override
+  String get introStep1 => 'Bienvenue dans l\'aventure musicale JB Audio !';
+
+  @override
+  String get introStep2 => 'Chaque minute d\'écoute vous rapporte de l\'XP.';
+
+  @override
+  String get introStep3 =>
+      'Débloquez des titres légendaires et montez en niveau.';
+
+  @override
+  String get introStep4 =>
+      'Relevez des quêtes musicales pour des bonus massifs.';
+
+  @override
+  String get introStep5 => 'Retrouvez votre progression dans la Bibliothèque.';
 }
