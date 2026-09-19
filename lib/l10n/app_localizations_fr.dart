@@ -2534,4 +2534,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get introStep5 => 'Retrouvez votre progression dans la Bibliothèque.';
+
+  @override
+  String get sectionGamification => 'Gamification';
+
+  @override
+  String get gamificationEnabled => 'Activer la Gamification';
+
+  @override
+  String get gamificationEnabledSubtitle =>
+      'Active les XP, niveaux, titres, quêtes et fonctionnalités de progression. Votre progression est conservée si la Gamification est désactivée.';
 }

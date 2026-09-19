@@ -5,6 +5,7 @@ import 'library_database_service.dart';
 import 'recommendation_service.dart';
 import 'music_quest_service.dart';
 import 'statistics_service.dart';
+import 'storage_service.dart';
 
 /// Service responsible for managing user XP and progression.
 /// Follows a passive consumer pattern, listening to playback events.
@@ -19,6 +20,7 @@ class XpService extends ChangeNotifier {
   final _xpUpdateController = StreamController<UserProgression>.broadcast();
   final _snapshotUpdateController = StreamController<ProgressionSnapshot>.broadcast();
 
+  bool _isEnabled = true;
   bool _isInitialized = false;
   UserProgression _progression = const UserProgression();
   final List<UnlockedTitle> _unlockedTitles = [];
@@ -29,6 +31,9 @@ class XpService extends ChangeNotifier {
 
   /// Returns true if the service has loaded the initial progression from the database.
   bool get isInitialized => _isInitialized;
+
+  /// Returns true if gamification is enabled.
+  bool get isEnabled => _isEnabled;
 
   /// Returns the current user progression snapshot (raw).
   UserProgression get progression => _progression;
@@ -62,6 +67,9 @@ class XpService extends ChangeNotifier {
   /// Initializes the service by loading data and subscribing to events.
   Future<void> initialize() async {
     if (_isInitialized) return;
+
+    // 0. Load enabled state
+    _isEnabled = await StorageService().getGamificationEnabled();
 
     // 1. Load current progression from DB
     _progression = await _dbService.getUserProgression();
@@ -98,7 +106,7 @@ class XpService extends ChangeNotifier {
 
   /// Entry point for all playback events.
   Future<void> _handlePlaybackEvent(PlaybackEvent event) async {
-    if (!_isInitialized) return;
+    if (!_isInitialized || !_isEnabled) return;
 
     switch (event.eventType) {
       case 'time_added':
@@ -138,7 +146,7 @@ class XpService extends ChangeNotifier {
 
   /// Handles quest completion events.
   Future<void> _handleQuestEvent(MusicQuestInstance quest) async {
-    if (!_isInitialized || quest.status != QuestStatus.completed) return;
+    if (!_isInitialized || quest.status != QuestStatus.completed || !_isEnabled) return;
 
     // Determine amount based on definition
     // For V1, daily quests are everything except weekly_loyalty
@@ -157,11 +165,25 @@ class XpService extends ChangeNotifier {
     unawaited(checkTitles());
   }
 
+  /// Sets whether gamification is enabled.
+  Future<void> setEnabled(bool value) async {
+    if (_isEnabled == value) return;
+    _isEnabled = value;
+    await StorageService().saveGamificationEnabled(value);
+    
+    // If re-enabled, trigger a title check to catch up on any milestones
+    if (_isEnabled) {
+      unawaited(checkTitles());
+    }
+    
+    notifyListeners();
+  }
+
   bool _isCheckingTitles = false;
 
   /// Manually triggers a check for new titles based on current statistics.
   Future<void> checkTitles() async {
-    if (!_isInitialized || _isCheckingTitles) return;
+    if (!_isInitialized || _isCheckingTitles || !_isEnabled) return;
     _isCheckingTitles = true;
 
     try {
@@ -240,7 +262,7 @@ class XpService extends ChangeNotifier {
   /// Internal logic to apply the 1 XP / 60 seconds rule.
   /// This method is serialized by the execution flow to prevent lost updates.
   Future<void> _processTimeAdded(int seconds) async {
-    if (seconds <= 0) return;
+    if (seconds <= 0 || !_isEnabled) return;
 
     final int totalSeconds = _progression.pendingSeconds + seconds;
     final int xpToAdd = totalSeconds ~/ 60;

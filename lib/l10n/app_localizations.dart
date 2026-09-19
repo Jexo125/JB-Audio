@@ -4671,6 +4671,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Track your progress in the Library.'**
   String get introStep5;
+
+  /// No description provided for @sectionGamification.
+  ///
+  /// In en, this message translates to:
+  /// **'Gamification'**
+  String get sectionGamification;
+
+  /// No description provided for @gamificationEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Gamification'**
+  String get gamificationEnabled;
+
+  /// No description provided for @gamificationEnabledSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable XP, levels, titles, quests and progression features. Your progression is kept if Gamification is disabled.'**
+  String get gamificationEnabledSubtitle;
 }
 
 class _AppLocalizationsDelegate

@@ -6,6 +6,7 @@ import '../providers/player_provider.dart';
 import '../services/auto_dj_service.dart';
 import '../services/transcoding_service.dart';
 import '../services/storage_service.dart';
+import '../services/xp_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/settings/settings_section_card.dart';
 import '../widgets/settings/settings_icon_badge.dart';
@@ -47,6 +48,8 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
+        _buildGamificationSection(),
+        const SizedBox(height: 24),
         SettingsSectionCard(
           title: AppLocalizations.of(context)!.sectionAutoDj,
           children: [
@@ -117,6 +120,44 @@ class _SettingsPlaybackTabState extends State<SettingsPlaybackTab> {
     final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
     playerProvider.autoDjService.setMode(mode);
     setState(() => _autoDjMode = mode);
+  }
+
+  Widget _buildGamificationSection() {
+    final accent = Theme.of(context).colorScheme.primary;
+    return Consumer<XpService>(
+      builder: (context, xpService, _) {
+        return SettingsSectionCard(
+          title: AppLocalizations.of(context)!.sectionGamification.toUpperCase(),
+          children: [
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              leading: SettingsIconBadge(
+                gradientColors: const [Color(0xFFFFD700), Color(0xFFFFA500)],
+                icon: CupertinoIcons.sparkles,
+              ),
+              title: Text(
+                AppLocalizations.of(context)!.gamificationEnabled,
+                style: const TextStyle(fontSize: 16),
+              ),
+              subtitle: Text(
+                AppLocalizations.of(context)!.gamificationEnabledSubtitle,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: context.isDark
+                      ? Colors.white.withValues(alpha: 0.5)
+                      : Colors.black.withValues(alpha: 0.5),
+                ),
+              ),
+              trailing: CupertinoSwitch(
+                value: xpService.isEnabled,
+                activeTrackColor: accent,
+                onChanged: (v) => xpService.setEnabled(v),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildAudioDuckingSection() {

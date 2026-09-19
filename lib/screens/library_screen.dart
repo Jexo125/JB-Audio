@@ -6,6 +6,7 @@ import '../models/album.dart';
 import '../models/artist.dart';
 import '../providers/providers.dart';
 import '../services/local_music_service.dart';
+import '../services/xp_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 import '../utils/navigation_helper.dart';
@@ -277,19 +278,29 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     subtitle: l10n.recentActivity,
                     onTap: () => _navigate(context, const StatisticsScreen()),
                   ),
-                  CategoryCard(
-                    icon: CupertinoIcons.flag_fill,
-                    colors: [theme.colorScheme.secondary, theme.colorScheme.primary],
-                    title: l10n.quests,
-                    subtitle: l10n.musicalQuests,
-                    onTap: () => _navigate(context, const MusicQuestsScreen()),
+                  Consumer<XpService>(
+                    builder: (context, xpService, _) {
+                      if (!xpService.isEnabled) return const SizedBox.shrink();
+                      return CategoryCard(
+                        icon: CupertinoIcons.flag_fill,
+                        colors: [theme.colorScheme.secondary, theme.colorScheme.primary],
+                        title: l10n.quests,
+                        subtitle: l10n.musicalQuests,
+                        onTap: () => _navigate(context, const MusicQuestsScreen()),
+                      );
+                    },
                   ),
-                  CategoryCard(
-                    icon: CupertinoIcons.sparkles,
-                    colors: [Colors.orange, Colors.deepOrange],
-                    title: l10n.progressionTitle,
-                    subtitle: l10n.titlesSection,
-                    onTap: () => _navigate(context, const ProgressionScreen()),
+                  Consumer<XpService>(
+                    builder: (context, xpService, _) {
+                      if (!xpService.isEnabled) return const SizedBox.shrink();
+                      return CategoryCard(
+                        icon: CupertinoIcons.sparkles,
+                        colors: [Colors.orange, Colors.deepOrange],
+                        title: l10n.progressionTitle,
+                        subtitle: l10n.titlesSection,
+                        onTap: () => _navigate(context, const ProgressionScreen()),
+                      );
+                    },
                   ),
                 ]),
               ),

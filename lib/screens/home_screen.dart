@@ -10,6 +10,7 @@ import '../providers/auth_provider.dart';
 import '../services/subsonic_service.dart';
 import '../services/recommendation_service.dart';
 import '../services/offline_service.dart';
+import '../services/xp_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
 import '../widgets/widgets.dart';
@@ -35,7 +36,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        GamificationIntroOverlay.showIfNeeded(context);
+        final xpService = Provider.of<XpService>(context, listen: false);
+        if (xpService.isEnabled) {
+          GamificationIntroOverlay.showIfNeeded(context);
+        }
       }
     });
   }
@@ -97,13 +101,18 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             actions: [
-              IconButton(
-                icon: Icon(
-                  CupertinoIcons.flag_fill,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-                onPressed: () {
-                  NavigationHelper.push(context, const MusicQuestsScreen());
+              Consumer<XpService>(
+                builder: (context, xpService, _) {
+                  if (!xpService.isEnabled) return const SizedBox.shrink();
+                  return IconButton(
+                    icon: Icon(
+                      CupertinoIcons.flag_fill,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                    onPressed: () {
+                      NavigationHelper.push(context, const MusicQuestsScreen());
+                    },
+                  );
                 },
               ),
               if (isDesktop) const SizedBox(width: 8),

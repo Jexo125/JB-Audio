@@ -24,6 +24,7 @@ class StorageService {
   static const String _lrcLibFallbackKey = 'lrclib_fallback';
   static const String _audioDuckingKey = 'audio_ducking';
   static const String _volumeKey = 'volume';
+  static const String _gamificationEnabledKey = 'gamification_enabled';
   static const String _gamificationIntroVersionKey = 'gamification_intro_version_seen';
 
   Future<String?> _safeSecureRead(String key) async {
@@ -290,6 +291,16 @@ class StorageService {
   Future<double> getVolume() async {
     final prefs = await _prefs;
     return prefs.getDouble(_volumeKey) ?? 1.0;
+  }
+
+  Future<void> saveGamificationEnabled(bool enabled) async {
+    final prefs = await _prefs;
+    await prefs.setBool(_gamificationEnabledKey, enabled);
+  }
+
+  Future<bool> getGamificationEnabled() async {
+    final prefs = await _prefs;
+    return prefs.getBool(_gamificationEnabledKey) ?? true;
   }
 
   Future<void> saveGamificationIntroVersionSeen(int version) async {

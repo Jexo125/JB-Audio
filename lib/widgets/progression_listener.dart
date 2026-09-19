@@ -47,7 +47,7 @@ class _ProgressionListenerState extends State<ProgressionListener> {
 
   void _onProgressionChanged() {
     final xpService = _xpService;
-    if (!mounted || xpService == null) return;
+    if (!mounted || xpService == null || !xpService.isEnabled) return;
     final l10n = AppLocalizations.of(context);
     if (l10n == null) return;
 

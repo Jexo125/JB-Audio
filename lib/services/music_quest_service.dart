@@ -4,6 +4,7 @@ import '../models/models.dart';
 import 'library_database_service.dart';
 import 'recommendation_service.dart';
 import 'statistics_service.dart';
+import 'storage_service.dart';
 
 /// Non-persistent model representing the progress of a quest instance.
 class MusicQuestProgress {
@@ -290,6 +291,10 @@ class MusicQuestService {
   bool _isRefreshing = false;
   Future<void> _refreshInstances() async {
     if (_isRefreshing) return;
+
+    // Check if gamification is enabled
+    if (!(await StorageService().getGamificationEnabled())) return;
+
     _isRefreshing = true;
     try {
       final now = DateTime.now();
@@ -385,7 +390,10 @@ class MusicQuestService {
     _questUpdatedController.add(updated);
   }
 
-  void _handlePlaybackEvent(PlaybackEvent event) {
+  Future<void> _handlePlaybackEvent(PlaybackEvent event) async {
+    // Check if gamification is enabled
+    if (!(await StorageService().getGamificationEnabled())) return;
+
     // For V1, we simply re-check all active quests on any relevant event.
     // Reliability over micro-optimization.
     _checkAllActiveQuests();

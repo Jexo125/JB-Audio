@@ -2524,4 +2524,14 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get introStep5 => 'Track your progress in the Library.';
+
+  @override
+  String get sectionGamification => 'Gamification';
+
+  @override
+  String get gamificationEnabled => 'Enable Gamification';
+
+  @override
+  String get gamificationEnabledSubtitle =>
+      'Enable XP, levels, titles, quests and progression features. Your progression is kept if Gamification is disabled.';
 }

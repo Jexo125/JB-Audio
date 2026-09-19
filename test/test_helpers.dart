@@ -5,6 +5,8 @@ import 'package:jbaudio/providers/providers.dart';
 import 'package:jbaudio/services/services.dart';
 import 'package:jbaudio/services/audio_handler.dart';
 import 'package:jbaudio/services/transcoding_service.dart';
+import 'package:jbaudio/models/models.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 class FakeCastService extends CastService {
   @override
@@ -37,6 +39,54 @@ class FakeCastService extends CastService {
   Future<void> seek(Duration position) async {}
 }
 
+class FakeMusicQuestService extends Fake implements MusicQuestService {
+  @override
+  bool get isInitialized => true;
+  @override
+  List<MusicQuestInstance> getActiveQuests() => [];
+  @override
+  Future<List<MusicQuestInstance>> getCompletedQuests() async => [];
+  @override
+  Stream<MusicQuestInstance> get onQuestUpdated => const Stream.empty();
+  @override
+  Future<void> initialize() async {}
+  @override
+  Future<Map<String, MusicQuestProgress>> getAllActiveProgress() async => {};
+  @override
+  MusicQuestPeriodRange getCurrentPeriodRange(QuestPeriodType type) => MusicQuestPeriodRange(DateTime.now(), DateTime.now());
+  @override
+  Future<MusicQuestProgress> getQuestProgress(MusicQuestInstance instance) async => MusicQuestProgress(currentValue: 0, targetValue: 1);
+  @override
+  void dispose() {}
+}
+
+class FakeXpService extends ChangeNotifier implements XpService {
+  @override
+  bool get isInitialized => true;
+  @override
+  UserProgression get progression => const UserProgression();
+  @override
+  bool get isEnabled => true;
+
+  @override
+  Future<void> setEnabled(bool value) async {}
+
+  @override
+  ProgressionSnapshot get snapshot => ProgressionSnapshot.fromTotalXp(0);
+  @override
+  Stream<UserProgression> get onProgressionUpdated => const Stream.empty();
+  @override
+  Stream<ProgressionSnapshot> get onSnapshotUpdated => const Stream.empty();
+  @override
+  List<TitleSnapshot> getTitleSnapshots() => [];
+  @override
+  Future<void> initialize() async {}
+  @override
+  Future<void> checkTitles() async {}
+  @override
+  void dispose() {}
+}
+
 Widget createTestApp({
   required Widget child,
   SubsonicService? subsonicService,
@@ -44,6 +94,8 @@ Widget createTestApp({
   PlayerProvider? playerProvider,
   LibraryProvider? libraryProvider,
   AuthProvider? authProvider,
+  XpService? xpService,
+  MusicQuestService? musicQuestService,
 }) {
   final service = subsonicService ?? SubsonicService();
   final storage = storageService ?? StorageService();
@@ -52,6 +104,8 @@ Widget createTestApp({
     providers: [
       Provider<SubsonicService>.value(value: service),
       Provider<StorageService>.value(value: storage),
+      Provider<MusicQuestService>.value(value: musicQuestService ?? FakeMusicQuestService()),
+      ChangeNotifierProvider<XpService>.value(value: xpService ?? FakeXpService()),
       ChangeNotifierProvider<AuthProvider>(
         create: (_) => authProvider ?? AuthProvider(service, storage),
       ),

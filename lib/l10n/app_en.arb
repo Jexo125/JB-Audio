@@ -2319,5 +2319,8 @@
   "introStep2": "Every minute of listening earns you XP.",
   "introStep3": "Unlock legendary titles and level up.",
   "introStep4": "Complete musical quests for massive bonuses.",
-  "introStep5": "Track your progress in the Library."
+  "introStep5": "Track your progress in the Library.",
+  "sectionGamification": "Gamification",
+  "gamificationEnabled": "Enable Gamification",
+  "gamificationEnabledSubtitle": "Enable XP, levels, titles, quests and progression features. Your progression is kept if Gamification is disabled."
 }

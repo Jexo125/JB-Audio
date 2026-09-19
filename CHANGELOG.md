@@ -5,6 +5,19 @@ All notable changes to JB Audio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.7] - 2026-09-14
+
+### 🎮 Gamification configurable
+* Nouvelle option permettant d'activer ou désactiver complètement la Gamification.
+* Gamification activée par défaut pour conserver le comportement des utilisateurs existants.
+* Possibilité d'utiliser JB Audio comme lecteur musical classique sans XP, niveaux, titres, quêtes ou éléments RPG.
+* Désactivation de la couche Gamification sans désactiver l'historique d'écoute, les statistiques générales ou les recommandations.
+* Progression Gamification entièrement conservée lorsque la fonctionnalité est désactivée.
+* Réactivation permettant de retrouver la progression existante.
+* Préférence persistante entre les sessions.
+* Interface Gamification automatiquement masquée lorsqu'elle est désactivée.
+* Localisation française et anglaise.
+
 ## [2.1.6] - 2026-09-14
 
 ### 🎛️ Audio

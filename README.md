@@ -8,6 +8,13 @@ La version 2.0 apporte une refonte profonde des performances réseau, une gestio
 
 ---
 
+## 🚀 Nouveautés de la Version 2.1.7
+
+### 🎮 Gamification Configurable
+- **Mode Classique** : Vous pouvez désormais désactiver la Gamification (XP, niveaux, quêtes) dans les paramètres de lecture pour utiliser JB Audio comme un lecteur classique. Votre progression est conservée.
+
+---
+
 ## 🚀 Nouveautés de la Version 2.1.6
 
 ### 🎮 UX Gamification

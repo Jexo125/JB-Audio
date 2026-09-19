@@ -2486,5 +2486,8 @@
   "introStep2": "Chaque minute d'écoute vous rapporte de l'XP.",
   "introStep3": "Débloquez des titres légendaires et montez en niveau.",
   "introStep4": "Relevez des quêtes musicales pour des bonus massifs.",
-  "introStep5": "Retrouvez votre progression dans la Bibliothèque."
+  "introStep5": "Retrouvez votre progression dans la Bibliothèque.",
+  "sectionGamification": "Gamification",
+  "gamificationEnabled": "Activer la Gamification",
+  "gamificationEnabledSubtitle": "Active les XP, niveaux, titres, quêtes et fonctionnalités de progression. Votre progression est conservée si la Gamification est désactivée."
 }
