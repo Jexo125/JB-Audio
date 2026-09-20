@@ -5,6 +5,20 @@ All notable changes to JB Audio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.8] - 2026-09-14
+
+### 🏆 Easter Egg & Badge
+* Trophée/badge « Curieux » affiché à côté du nom sur l'accueil après déblocage.
+* Nouvelle présentation visuelle de l'Easter Egg avec une animation plein écran immersive.
+* Persistance du badge débloqué indépendamment de la Gamification.
+* Présentation du badge accessible en cliquant sur le trophée de l'accueil.
+* Mise à jour de la Developer Card (« JB Audio » / « Créé avec ❤️ »).
+
+### ✨ Interface
+* XpSummaryCard compactée d'environ 20 % pour un gain d'espace sur l'accueil.
+* Toutes les informations de progression (XP, niveaux) sont conservées et lisibles.
+* Localisation française et anglaise mise à jour.
+
 ## [2.1.7] - 2026-09-14
 
 ### 🎮 Gamification configurable

@@ -1663,7 +1663,21 @@ class AppLocalizationsNl extends AppLocalizations {
   String get aboutPlatform => 'Platform';
 
   @override
-  String get aboutMadeBy => 'Developed by JB Audio';
+  String get aboutMadeBy => 'JB Audio';
+
+  @override
+  String get aboutMadeWith => 'Made with ❤️';
+
+  @override
+  String get developerRevealMessage =>
+      'You just discovered who\'s behind JB Audio. 🎵';
+
+  @override
+  String get badgeCuriousTitle => 'Curious';
+
+  @override
+  String get badgeCuriousDesc =>
+      'Discovered the behind-the-scenes of JB Audio.';
 
   @override
   String get aboutGitHub => 'github.com/dddevid';
@@ -2266,7 +2280,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get easterEggSecret => 'You found the secret! 👀';
 
   @override
-  String get developerRealName => 'Jérémie Bourgade';
+  String get developerRealName => 'Jérémie BOURGADE';
 
   @override
   String get statisticsTitle => 'Statistics';

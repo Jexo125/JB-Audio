@@ -32,11 +32,11 @@ class XpSummaryCard extends StatelessWidget {
             final data = snapshot.data!;
 
             return Padding(
-              padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 4),
               child: GestureDetector(
                 onTap: () => NavigationHelper.push(context, const ProgressionScreen()),
                 child: Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -49,6 +49,7 @@ class XpSummaryCard extends StatelessWidget {
                     ],
                   ),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
@@ -57,7 +58,7 @@ class XpSummaryCard extends StatelessWidget {
                           Text(
                             l10n.levelLabel(data.currentLevel),
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 15,
                               fontWeight: FontWeight.bold,
                               color: isDark ? Colors.white : Colors.black,
                             ),
@@ -65,20 +66,20 @@ class XpSummaryCard extends StatelessWidget {
                           Text(
                             '${data.totalXp} XP',
                             style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
                               color: theme.colorScheme.primary,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       _AnimatedProgressBar(
                         value: data.progressPercent,
                         color: theme.colorScheme.primary,
                         backgroundColor: isDark ? Colors.white10 : Colors.grey[200]!,
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -87,7 +88,7 @@ class XpSummaryCard extends StatelessWidget {
                                 ? l10n.maxLevelReached
                                 : '${data.xpInCurrentLevel} / ${data.xpRequiredForNext} XP',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 10,
                               color: isDark ? Colors.white60 : Colors.black54,
                             ),
                           ),
@@ -95,7 +96,7 @@ class XpSummaryCard extends StatelessWidget {
                             Text(
                               l10n.xpNextLevel(data.xpRequiredForNext - data.xpInCurrentLevel),
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: 10,
                                 fontWeight: FontWeight.w500,
                                 color: isDark ? Colors.white38 : Colors.black38,
                               ),
@@ -130,7 +131,7 @@ class _AnimatedProgressBar extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(6),
       child: Container(
-        height: 8,
+        height: 6,
         width: double.infinity,
         color: backgroundColor,
         child: TweenAnimationBuilder<double>(

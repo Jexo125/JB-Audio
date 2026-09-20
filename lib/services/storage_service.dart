@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -12,6 +13,8 @@ class StorageService {
 
   SharedPreferences? _prefsInstance;
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  
+  final ValueNotifier<bool> curiousBadgeNotifier = ValueNotifier(false);
 
   static const String _serverConfigKey = 'server_config';
   static const String _serverProfilesKey = 'server_profiles';
@@ -25,6 +28,7 @@ class StorageService {
   static const String _audioDuckingKey = 'audio_ducking';
   static const String _volumeKey = 'volume';
   static const String _gamificationEnabledKey = 'gamification_enabled';
+  static const String _badgeCuriousKey = 'badge_curious';
   static const String _gamificationIntroVersionKey = 'gamification_intro_version_seen';
 
   Future<String?> _safeSecureRead(String key) async {
@@ -64,6 +68,7 @@ class StorageService {
 
   Future<void> init() async {
     _prefsInstance = await SharedPreferences.getInstance();
+    curiousBadgeNotifier.value = await getCuriousBadgeUnlocked();
   }
 
   Future<SharedPreferences> get _prefs async {
@@ -301,6 +306,17 @@ class StorageService {
   Future<bool> getGamificationEnabled() async {
     final prefs = await _prefs;
     return prefs.getBool(_gamificationEnabledKey) ?? true;
+  }
+
+  Future<void> saveCuriousBadgeUnlocked(bool unlocked) async {
+    final prefs = await _prefs;
+    await prefs.setBool(_badgeCuriousKey, unlocked);
+    curiousBadgeNotifier.value = unlocked;
+  }
+
+  Future<bool> getCuriousBadgeUnlocked() async {
+    final prefs = await _prefs;
+    return prefs.getBool(_badgeCuriousKey) ?? false;
   }
 
   Future<void> saveGamificationIntroVersionSeen(int version) async {

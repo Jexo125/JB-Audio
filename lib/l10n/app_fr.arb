@@ -1915,7 +1915,11 @@
   "@aboutPlatform": {
     "description": "About screen platform row title"
   },
-  "aboutMadeBy": "Développé par JB Audio",
+  "aboutMadeBy": "JB Audio",
+  "aboutMadeWith": "Créé avec ❤️",
+  "developerRevealMessage": "Tu viens de découvrir qui se cache derrière JB Audio. 🎵",
+  "badgeCuriousTitle": "Curieux",
+  "badgeCuriousDesc": "A découvert les coulisses de JB Audio.",
   "@aboutMadeBy": {
     "description": "Developer credit text in the about tab"
   },
@@ -2366,7 +2370,7 @@
   "reset": "Réinitialiser",
   "developerSlogan": "Votre musique, votre serveur, votre liberté.",
   "easterEggSecret": "Tu as trouvé le secret ! 👀",
-  "developerRealName": "Jérémie Bourgade",
+  "developerRealName": "Jérémie BOURGADE",
   "statisticsTitle": "Statistiques",
   "noHistory": "Aucun historique",
   "today": "Aujourd'hui",

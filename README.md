@@ -8,14 +8,11 @@ La version 2.0 apporte une refonte profonde des performances réseau, une gestio
 
 ---
 
+## 🚀 Nouveautés de la Version 2.1.8
+* **Trophée « Curieux »** : Découvrez l'Easter Egg caché pour débloquer un badge spécial sur votre écran d'accueil.
+* **Interface optimisée** : Résumé XP plus compact et élégant sur l'accueil.
+
 ## 🚀 Nouveautés de la Version 2.1.7
-
-### 🎮 Gamification Configurable
-- **Mode Classique** : Vous pouvez désormais désactiver la Gamification (XP, niveaux, quêtes) dans les paramètres de lecture pour utiliser JB Audio comme un lecteur classique. Votre progression est conservée.
-
----
-
-## 🚀 Nouveautés de la Version 2.1.6
 
 ### 🎮 UX Gamification
 - **Progression sur l'Accueil** : Visualisez votre niveau et XP dès l'ouverture de l'application.

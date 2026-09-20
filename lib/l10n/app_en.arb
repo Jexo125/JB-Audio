@@ -1835,8 +1835,32 @@
   "aboutPlatform": "Platform",
   "@aboutPlatform": { "description": "About screen platform row title" },
 
-  "aboutMadeBy": "Developed by JB Audio",
+  "aboutMadeBy": "JB Audio",
   "@aboutMadeBy": { "description": "Developer credit text in the about tab" },
+
+  "aboutMadeWith": "Made with ❤️",
+  "@aboutMadeWith": { "description": "Made with love credit" },
+
+  "developerRevealMessage": "You just discovered who's behind JB Audio. 🎵",
+  "@developerRevealMessage": { "description": "Easter egg discovery message" },
+
+  "badgeCuriousTitle": "Curious",
+  "@badgeCuriousTitle": { "description": "Easter egg badge title" },
+
+  "badgeCuriousDesc": "Discovered the behind-the-scenes of JB Audio.",
+  "@badgeCuriousDesc": { "description": "Easter egg badge description" },
+
+  "aboutMadeWith": "Made with ❤️",
+  "@aboutMadeWith": { "description": "Made with love credit" },
+
+  "developerRevealMessage": "You just discovered who's behind JB Audio. 🎵",
+  "@developerRevealMessage": { "description": "Easter egg discovery message" },
+
+  "badgeCuriousTitle": "Curious",
+  "@badgeCuriousTitle": { "description": "Easter egg badge title" },
+
+  "badgeCuriousDesc": "Discovered the behind-the-scenes of JB Audio.",
+  "@badgeCuriousDesc": { "description": "Easter egg badge description" },
 
   "aboutGitHub": "github.com/dddevid",
   "@aboutGitHub": { "description": "Developer GitHub handle shown as subtitle" },
@@ -2199,7 +2223,7 @@
   "reset": "Reset",
   "developerSlogan": "Your music, your server, your freedom.",
   "easterEggSecret": "You found the secret! 👀",
-  "developerRealName": "Jérémie Bourgade",
+  "developerRealName": "Jérémie BOURGADE",
   "statisticsTitle": "Statistics",
   "noHistory": "No history",
   "today": "Today",

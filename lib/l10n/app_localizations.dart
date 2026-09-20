@@ -3151,8 +3151,32 @@ abstract class AppLocalizations {
   /// Developer credit text in the about tab
   ///
   /// In en, this message translates to:
-  /// **'Developed by JB Audio'**
+  /// **'JB Audio'**
   String get aboutMadeBy;
+
+  /// Made with love credit
+  ///
+  /// In en, this message translates to:
+  /// **'Made with ❤️'**
+  String get aboutMadeWith;
+
+  /// Easter egg discovery message
+  ///
+  /// In en, this message translates to:
+  /// **'You just discovered who\'s behind JB Audio. 🎵'**
+  String get developerRevealMessage;
+
+  /// Easter egg badge title
+  ///
+  /// In en, this message translates to:
+  /// **'Curious'**
+  String get badgeCuriousTitle;
+
+  /// Easter egg badge description
+  ///
+  /// In en, this message translates to:
+  /// **'Discovered the behind-the-scenes of JB Audio.'**
+  String get badgeCuriousDesc;
 
   /// Developer GitHub handle shown as subtitle
   ///
@@ -4201,7 +4225,7 @@ abstract class AppLocalizations {
   /// No description provided for @developerRealName.
   ///
   /// In en, this message translates to:
-  /// **'Jérémie Bourgade'**
+  /// **'Jérémie BOURGADE'**
   String get developerRealName;
 
   /// No description provided for @statisticsTitle.

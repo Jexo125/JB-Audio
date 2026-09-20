@@ -10,6 +10,7 @@ import '../providers/auth_provider.dart';
 import '../services/subsonic_service.dart';
 import '../services/recommendation_service.dart';
 import '../services/offline_service.dart';
+import '../services/storage_service.dart';
 import '../services/xp_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/navigation_helper.dart';
@@ -30,10 +31,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Map<String, List<Song>> _cachedMixes = const {};
   List<Song> _cachedPersonalized = const [];
   String _lastRandomKey = '';
+  bool _isBadgeUnlocked = false;
+  bool _shouldAnimateTrophy = false;
+  static bool _sessionBadgeAnimated = false;
 
   @override
   void initState() {
     super.initState();
+    _initBadgeStatus();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         final xpService = Provider.of<XpService>(context, listen: false);
@@ -42,6 +47,45 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     });
+  }
+
+  Future<void> _initBadgeStatus() async {
+    final storage = StorageService();
+    final unlocked = await storage.getCuriousBadgeUnlocked();
+    
+    // Listen for real-time updates (from DeveloperCard)
+    storage.curiousBadgeNotifier.addListener(_onBadgeChanged);
+
+    if (mounted) {
+      setState(() {
+        _isBadgeUnlocked = unlocked;
+        // If already unlocked at startup, we consider it "already seen/animated" for this session
+        if (unlocked) {
+          _sessionBadgeAnimated = true;
+        }
+      });
+    }
+  }
+
+  void _onBadgeChanged() {
+    if (!mounted) return;
+    final unlocked = StorageService().curiousBadgeNotifier.value;
+    
+    if (unlocked && !_isBadgeUnlocked) {
+      setState(() {
+        _isBadgeUnlocked = true;
+        if (!_sessionBadgeAnimated) {
+          _shouldAnimateTrophy = true;
+          _sessionBadgeAnimated = true;
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    StorageService().curiousBadgeNotifier.removeListener(_onBadgeChanged);
+    super.dispose();
   }
 
   String _getGreeting() {
@@ -80,6 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isDesktop = _isDesktop;
     final hPad = isDesktop ? 32.0 : 16.0;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: CustomScrollView(
@@ -91,13 +136,28 @@ class _HomeScreenState extends State<HomeScreen> {
             backgroundColor: isDark ? AppTheme.darkBackground : Colors.white,
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: EdgeInsets.only(left: hPad, bottom: 14),
-              title: Text(
-                _getGreeting(),
-                style: TextStyle(
-                  fontSize: isDesktop ? 28 : 24,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
+              title: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    _getGreeting(),
+                    style: TextStyle(
+                      fontSize: isDesktop ? 28 : 24,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  if (_isBadgeUnlocked) ...[
+                    const SizedBox(width: 8),
+                    _TrophyBadge(
+                      title: l10n.badgeCuriousTitle,
+                      description: l10n.badgeCuriousDesc,
+                      shouldAnimate: _shouldAnimateTrophy,
+                    ),
+                  ],
+                ],
               ),
             ),
             actions: [
@@ -444,6 +504,116 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+class _TrophyBadge extends StatefulWidget {
+  final String title;
+  final String description;
+  final bool shouldAnimate;
+
+  const _TrophyBadge({
+    required this.title,
+    required this.description,
+    this.shouldAnimate = false,
+  });
+
+  @override
+  State<_TrophyBadge> createState() => _TrophyBadgeState();
+}
+
+class _TrophyBadgeState extends State<_TrophyBadge> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    _scaleAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.elasticOut,
+    );
+    
+    if (widget.shouldAnimate) {
+      _controller.forward();
+    } else {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _showBadgeInfo(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.amber.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.emoji_events_rounded, color: Colors.amber, size: 64),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              widget.title,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              widget.description,
+              style: const TextStyle(fontSize: 15, color: Colors.black54),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: GestureDetector(
+        onTap: () => _showBadgeInfo(context),
+        child: Tooltip(
+          message: widget.title,
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.amber.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.emoji_events_rounded,
+              color: Colors.amber,
+              size: 14, // Adjusted for AppBar title scale
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class _PlaylistCard extends StatelessWidget {
   final dynamic playlist;
