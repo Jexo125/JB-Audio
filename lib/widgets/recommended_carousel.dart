@@ -76,25 +76,10 @@ class _RecommendedCard extends StatelessWidget {
     required this.size,
   });
 
-  String? _getReasonLabel(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final album = recommendation.album;
-
-    switch (recommendation.reason) {
-      case 'artist':
-        return l10n.recommendedBecauseYouLike(album.artist ?? '');
-      case 'genre':
-        return l10n.recommendedInYourStyle(album.genre ?? '');
-      default:
-        return null;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final reason = _getReasonLabel(context);
 
     return GestureDetector(
       onTap: () => NavigationHelper.push(
@@ -129,20 +114,6 @@ class _RecommendedCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            if (reason != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Text(
-                  reason,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: theme.colorScheme.primary.withValues(alpha: 0.8),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
           ],
         ),
       ),

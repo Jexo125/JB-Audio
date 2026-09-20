@@ -24,6 +24,7 @@ class LrcLibService {
   Future<Map<String, dynamic>?> searchLyrics({
     required String artist,
     required String title,
+    String? album,
     int? durationSeconds,
   }) async {
     try {
@@ -32,13 +33,26 @@ class LrcLibService {
         queryParameters: {
           'artist_name': artist,
           'track_name': title,
-          if (durationSeconds != null) 'duration': durationSeconds,
+          if (album != null && album.isNotEmpty) 'album_name': album,
+          if (durationSeconds != null && durationSeconds > 0) 'duration': durationSeconds,
         },
       );
 
       if (response.statusCode != 200 || response.data == null) return null;
 
       final data = response.data as Map<String, dynamic>;
+
+      // Safety check: verify duration if provided (within 5 seconds)
+      if (durationSeconds != null && durationSeconds > 0) {
+        final respDuration = data['duration'];
+        if (respDuration != null) {
+          final diff = (respDuration.toDouble() - durationSeconds).abs();
+          if (diff > 5) {
+            debugPrint('[LRCLIB] Duration mismatch too high (${diff.toStringAsFixed(1)}s). Skipping.');
+            return null;
+          }
+        }
+      }
 
       // Try synced lyrics first (most useful)
       final synced = data['syncedLyrics'] as String?;

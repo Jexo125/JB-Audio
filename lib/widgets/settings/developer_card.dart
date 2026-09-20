@@ -58,8 +58,8 @@ class _DeveloperCardState extends State<DeveloperCard> with SingleTickerProvider
         _showSecret = true;
         _tapCount = 0;
       });
-      // Revert after 5 seconds to let them read the message
-      Future.delayed(const Duration(seconds: 5), () {
+      // Revert after 10 seconds to let them read the message clearly after the 3s celebration
+      Future.delayed(const Duration(seconds: 10), () {
         if (mounted) {
           setState(() {
             _showSecret = false;

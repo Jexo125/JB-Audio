@@ -420,16 +420,6 @@ class AppLocalizationsPl extends AppLocalizations {
   String get recommendedForYou => 'Recommended for you';
 
   @override
-  String recommendedBecauseYouLike(String artist) {
-    return 'Because you like $artist';
-  }
-
-  @override
-  String recommendedInYourStyle(String genre) {
-    return 'In your style: $genre';
-  }
-
-  @override
   String recommendedSimilarTo(String artist) {
     return 'Similar to $artist';
   }
@@ -1663,7 +1653,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get aboutPlatform => 'Platform';
 
   @override
-  String get aboutMadeBy => 'JB Audio';
+  String get aboutMadeBy => 'Developed by JB Audio';
 
   @override
   String get aboutMadeWith => 'Made with ❤️';

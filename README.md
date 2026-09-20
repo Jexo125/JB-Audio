@@ -8,6 +8,9 @@ La version 2.0 apporte une refonte profonde des performances réseau, une gestio
 
 ---
 
+## 🚀 Nouveautés de la Version 2.1.9
+* **Corrections visuelles** : Amélioration de la Developer Card et support du mode sombre pour le dialogue du badge secret.
+
 ## 🚀 Nouveautés de la Version 2.1.8
 * **Trophée « Curieux »** : Découvrez l'Easter Egg caché pour débloquer un badge spécial sur votre écran d'accueil.
 * **Interface optimisée** : Résumé XP plus compact et élégant sur l'accueil.

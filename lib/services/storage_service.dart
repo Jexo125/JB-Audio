@@ -275,7 +275,7 @@ class StorageService {
 
   Future<bool> getLrcLibFallback() async {
     final prefs = await _prefs;
-    return prefs.getBool(_lrcLibFallbackKey) ?? false;
+    return prefs.getBool(_lrcLibFallbackKey) ?? true;
   }
 
   Future<void> saveAudioDuckingEnabled(bool enabled) async {

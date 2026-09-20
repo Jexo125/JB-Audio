@@ -549,9 +549,13 @@ class _TrophyBadgeState extends State<_TrophyBadge> with SingleTickerProviderSta
   }
 
   void _showBadgeInfo(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
         content: Column(
@@ -568,13 +572,20 @@ class _TrophyBadgeState extends State<_TrophyBadge> with SingleTickerProviderSta
             const SizedBox(height: 20),
             Text(
               widget.title,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               widget.description,
-              style: const TextStyle(fontSize: 15, color: Colors.black54),
+              style: TextStyle(
+                fontSize: 15,
+                color: isDark ? Colors.white70 : Colors.black54,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -582,7 +593,13 @@ class _TrophyBadgeState extends State<_TrophyBadge> with SingleTickerProviderSta
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(
+              'OK',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary,
+              ),
+            ),
           ),
         ],
       ),

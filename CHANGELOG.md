@@ -5,6 +5,13 @@ All notable changes to JB Audio will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.9] - 2026-09-14
+
+### 🎨 Corrections visuelles & UX
+* Restauration de la hiérarchie visuelle de la Developer Card (« Développé par JB Audio » mis en avant).
+* Amélioration de la lisibilité de l'Easter Egg : le contenu secret reste visible plus longtemps (10s) pour permettre une lecture confortable après la célébration.
+* Correction du contraste du dialogue de présentation du badge « Curieux » : support complet du mode sombre.
+
 ## [2.1.8] - 2026-09-14
 
 ### 🏆 Easter Egg & Badge

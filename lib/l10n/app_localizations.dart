@@ -898,18 +898,6 @@ abstract class AppLocalizations {
   /// **'Recommended for you'**
   String get recommendedForYou;
 
-  /// Reason for recommendation based on artist affinity
-  ///
-  /// In en, this message translates to:
-  /// **'Because you like {artist}'**
-  String recommendedBecauseYouLike(String artist);
-
-  /// Reason for recommendation based on genre affinity
-  ///
-  /// In en, this message translates to:
-  /// **'In your style: {genre}'**
-  String recommendedInYourStyle(String genre);
-
   /// Reason for recommendation based on similar artists
   ///
   /// In en, this message translates to:
@@ -3151,7 +3139,7 @@ abstract class AppLocalizations {
   /// Developer credit text in the about tab
   ///
   /// In en, this message translates to:
-  /// **'JB Audio'**
+  /// **'Developed by JB Audio'**
   String get aboutMadeBy;
 
   /// Made with love credit

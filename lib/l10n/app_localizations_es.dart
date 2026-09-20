@@ -421,16 +421,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get recommendedForYou => 'Recommended for you';
 
   @override
-  String recommendedBecauseYouLike(String artist) {
-    return 'Because you like $artist';
-  }
-
-  @override
-  String recommendedInYourStyle(String genre) {
-    return 'In your style: $genre';
-  }
-
-  @override
   String recommendedSimilarTo(String artist) {
     return 'Similar to $artist';
   }

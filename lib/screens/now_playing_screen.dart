@@ -14,11 +14,16 @@ import '../models/song.dart';
 import '../services/palette_service.dart';
 import '../services/subsonic_service.dart';
 import '../services/offline_service.dart';
+import '../services/lrclib_service.dart';
+import '../services/storage_service.dart';
 import '../services/lrc_ttml_parser.dart';
 import '../widgets/now_playing/queue_view.dart';
 import '../widgets/now_playing/now_playing_more_menu.dart';
 import '../widgets/now_playing/add_to_menu.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'settings_screen.dart';
+import '../utils/navigation_helper.dart';
+import '../l10n/app_localizations.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   final ImageProvider image;
@@ -105,6 +110,20 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
       if (rawLyrics == null && !offlineService.isOfflineMode && !_lastSong!.isLocal) {
         rawLyrics = await subsonic.getLyricsBySongId(_lastSong!.id) ??
             await subsonic.getLyrics(artist: _lastSong!.artist, title: _lastSong!.title);
+      }
+
+      // LRCLIB Fallback
+      if (rawLyrics == null && !offlineService.isOfflineMode) {
+        final storage = StorageService();
+        if (await storage.getLrcLibFallback()) {
+          final lrcLib = LrcLibService();
+          rawLyrics = await lrcLib.searchLyrics(
+            artist: _lastSong!.artist ?? '',
+            title: _lastSong!.title,
+            album: _lastSong!.album,
+            durationSeconds: _lastSong!.duration,
+          );
+        }
       }
 
       if (rawLyrics != null) {
@@ -273,6 +292,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                           } else {
                             Navigator.of(context).pop();
                           }
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.settings_rounded,
+                          color: Colors.white,
+                          size: 26,
+                        ),
+                        tooltip: AppLocalizations.of(context)?.settingsTitle,
+                        onPressed: () {
+                          NavigationHelper.push(context, const SettingsScreen());
                         },
                       ),
                     ],

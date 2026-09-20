@@ -522,26 +522,6 @@
     "description": "Title for recommended section on home screen"
   },
 
-  "recommendedBecauseYouLike": "Parce que vous aimez {artist}",
-  "@recommendedBecauseYouLike": {
-    "description": "Reason for recommendation based on artist affinity",
-    "placeholders": {
-      "artist": {
-        "type": "String"
-      }
-    }
-  },
-
-  "recommendedInYourStyle": "Dans votre style : {genre}",
-  "@recommendedInYourStyle": {
-    "description": "Reason for recommendation based on genre affinity",
-    "placeholders": {
-      "genre": {
-        "type": "String"
-      }
-    }
-  },
-
   "recommendedSimilarTo": "Similaire à {artist}",
   "@recommendedSimilarTo": {
     "description": "Reason for recommendation based on similar artists",
@@ -1915,7 +1895,7 @@
   "@aboutPlatform": {
     "description": "About screen platform row title"
   },
-  "aboutMadeBy": "JB Audio",
+  "aboutMadeBy": "Développé par JB Audio",
   "aboutMadeWith": "Créé avec ❤️",
   "developerRevealMessage": "Tu viens de découvrir qui se cache derrière JB Audio. 🎵",
   "badgeCuriousTitle": "Curieux",
